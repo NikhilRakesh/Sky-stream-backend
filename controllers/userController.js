@@ -31,7 +31,7 @@ export const userCreation = async (req, res, next) => {
       email,
       password: encryptedPassword,
       domains: domainList,
-      color:req.body.color,
+      color:req.body.color, 
       isActive: true,
     });
 
