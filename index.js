@@ -3,6 +3,8 @@ import express from "express";
 import dotenv from "dotenv";
 import morgan from "morgan";
 import UserRouter from "./routes/userRouter.js";
+
+
 dotenv.config();
 import mongoose from "./config/dbConfig.js";
 
@@ -18,7 +20,8 @@ app.use(morgan("tiny"));
 app.use(bodyParser.json({ limit: "30mb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 
-app.use("/api/users",UserRouter)
+app.use("/api/users",UserRouter);
+
 
 app.listen(PORT,()=>{
     console.log(`Server is running on port ${PORT}`);

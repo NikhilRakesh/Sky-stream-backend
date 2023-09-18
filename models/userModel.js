@@ -17,6 +17,14 @@ const userSchema=new mongoose.Schema({
     isActive:{
         type : Boolean ,
          default : true
+    },
+    isAdmin:{
+        type :Boolean  ,
+        default : false
+    },
+    color:{
+        type: String,
+        default:"#03a9f4"
     }
 });
 
