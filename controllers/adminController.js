@@ -2,7 +2,7 @@ import User from "../models/userModel.js"
 
 export const users=async(req,res)=>{
   try {
-      const user=await User.find();
+      const user=await User.find({isAdmin:false});
       console.log(user.data);
       res.status(201).send(user);
   } catch (error) {
