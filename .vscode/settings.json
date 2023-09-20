@@ -1,0 +1,46 @@
+{
+    "todo-tree.general.statusBar": "tags",
+    "todo-tree.general.tagGroups": {
+        
+    },
+    "todo-tree.highlights.useColourScheme": false,
+    "todo-tree.highlights.customHighlight": {
+        "BUG": {
+            "icon": "bug",
+        },
+        "HACK": {
+            "icon": "tools"
+        },
+        "FIXME": {
+            "icon": "flame"
+        },
+        "[ ]": {
+            "icon": "issue-draft"
+        },
+        "DONE": {
+            "icon": "issue-closed",
+           "foreground": "white",
+           "iconColour": "green",
+           "gutterIcon": true,
+           "background": "green"
+        },
+        "TODO":{
+            "background": "BLUE",
+            "foreground": "WHITE",
+            "iconColour": "BLUE"
+        }
+    },
+    "todo-tree.highlights.foregroundColourScheme": [
+        "white",
+        "black",
+        "black",
+        "white",
+        "white",
+        "white",
+        "black",
+        "green"
+    ],
+    "todo-tree.highlights.defaultHighlight": {
+    
+    }
+}

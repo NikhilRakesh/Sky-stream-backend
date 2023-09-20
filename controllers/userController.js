@@ -2,6 +2,8 @@ import User from "../models/userModel.js";
 import CryptoJS from "crypto-js";
 import { authenticator } from "otplib";
 import { message, transporter, cb } from "../config/nodemailer.js";
+import  jwt  from "jsonwebtoken";
+
 
 let email;
 let newOtp;
@@ -12,7 +14,7 @@ const generateOTP = () => {
   return token;
 };
 
-const hashPassword = (pass) => {
+const hashPassword = async(pass) => {
   return CryptoJS.AES.encrypt(pass, process.env.SECRET_KEY).toString();
 };
 
@@ -23,7 +25,7 @@ const decryptPassword = async (pass) => {
 
 export const userCreation = async (req, res, next) => {
   try {
-    const { email, password, domain, limit } = req.body;
+    const { email, password, domain, color, limit } = req.body;
 
     if (!email || !password) {
       return res
@@ -31,10 +33,12 @@ export const userCreation = async (req, res, next) => {
         .json({ error: "Email and password are required." });
     }
 
+    //maping the name and index
     const domainList = domain.map((name, index) => ({
       name,
       limit: limit[index],
     }));
+
 
     const encryptedPassword = await hashPassword(password);
 
@@ -42,21 +46,28 @@ export const userCreation = async (req, res, next) => {
       email,
       password: encryptedPassword,
       domains: domainList,
-      color: req.body.color, //TODO Destrature body color
+      color: color, //DONE Destrature body color -done
       isActive: true,
-    });
-
-    //TODO Decrypting the password for response
+    })
+    
+    //TODO Decrypting the password for response -its testing
 
     const decryptedPassword = await decryptPassword(newUser.password);
-
+    
+    const token = jwt.sign(
+      { _id: newUser._id },
+       process.env.JWT_SECRET, 
+        { expiresIn: '2h' })
+        
+        newUser.token = token
+      newUser.save();
     // Save the user and respond with the decrypted password
-    const savedUser = await newUser.save();
-    savedUser.password = decryptedPassword;
-    res.status(201).json(savedUser);
+    
+    
+    newUser.password = decryptedPassword;
+    res.status(201).json(newUser);
   } catch (error) {
-    console.error("Error while saving user:", error.message);
-    res.status(500).json({ error: "Error while saving user" });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -81,11 +92,13 @@ export const userLogin = async (req, res) => {
     // Decrypt the stored hashed password
     const decryptedStoredPassword = await decryptPassword(user.password);
 
-    // TODO :Refactor the below
+    // DONE :Refactor the below  -done
+    
 
     if (password === decryptedStoredPassword) {
-      return res.status(200).json({ message: "Login successful" }); //TODO usedate is not found in response
-    } else {
+      return res.status(200).json({ message: "Login successful", user }); //TODO usedate is not found in response  -Done
+    }
+    if (password !== decryptedStoredPassword) {
       return res
         .status(401)
         .json({ message: "Unauthorized: Invalid credentials" });
@@ -138,10 +151,10 @@ export const resetPass = async (req, res) => {
     if (!password) {
       return res.status(403).json({ error: "Password field can't be empty" });
     }
-    // TODO DESTRUCTURE  
+    // [x] DESTRUCTURE  -done
     if (password === confirmPassword) {
       const resetEmail = email;
-      const encryptedPassword = await hashPassword(password);
+      const encryptedPassword =  hashPassword(password);
       await User.findOneAndUpdate(
         { email: resetEmail },
         { $set: { password: encryptedPassword } },
@@ -149,10 +162,11 @@ export const resetPass = async (req, res) => {
       );
 
       return res.status(201).json({ message: "Successfully reset" });
-    } else {
+    } 
+    if(password!==confirmPassword) {
       return res.status(406).json({ error: "Confirm Password doesnot match" });
     }
   } catch (error) {
-    return res.status(500).json(error.message);
+    return res.status(500).json({error:error.message});
   }
 };

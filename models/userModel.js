@@ -25,7 +25,15 @@ const userSchema=new mongoose.Schema({
     color:{
         type: String,
         default:"#03a9f4"
-    }
+    },
+    token:{
+        type:String,
+        default:null,
+      },
+      resetPass:{
+        type:Number,
+        default:0
+      }
 });
 
 
