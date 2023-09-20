@@ -7,7 +7,7 @@ UserRouter.post("/register",userCreation);
 UserRouter.post("/verifyLogin",userLogin);
 UserRouter.post("/forget",verifyEmail)
 UserRouter.post("/verifyOtp",verifyOtp);
-UserRouter.post("resetPassword",resetPass)
+UserRouter.post("/resetPassword",resetPass)
 
 
 

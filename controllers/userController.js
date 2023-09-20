@@ -131,9 +131,26 @@ export const verifyOtp=(req,res)=>{
   }
 }
 
-export const resetPass=(req,res)=>{
+export const resetPass=async (req,res)=>{
   try {
-    const {password}=req.body;
+    const {password,confirmPassword}=req.body;
+    if(!password){
+      return  res.status(403).json("Password field can't be empty");
+    }
+    if(password==confirmPassword){
+      const resetEmail=email;
+      const encryptedPassword = await hashPassword(password);
+      await User.findOneAndUpdate(
+        { email:resetEmail},
+        { $set: { password: encryptedPassword } },
+        { new: true }
+    );
+        
+    return res.status(201).json({message:"Successfully reset"});
+    }else{
+      return   res.status(406).json({error:'Confirm Password doesnot match'});
+    }
+    
     
 
   } catch (error) {
