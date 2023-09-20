@@ -16,13 +16,13 @@ export const transporter = nodemailer.createTransport({
 
 export const message = (recipientMail,Subject,html) =>{
     let  message 
-    return   message = {
-        from: process.env.EMAIL, // Sender address
-        to: recipientMail, // List of recipients
-        subject: Subject, // Subject line
-        text: 'Hello, this is a test email sent from Node.js using Nodemailer!', // Plain text body,
-        html: html
-      };
+    return (message = {
+      from: process.env.EMAIL, // Sender address
+      to: recipientMail, // List of recipients
+      subject: Subject, // Subject line
+      text: "Hello, this is a test email sent from Node.js using Nodemailer!", //TODO correct message,
+      html: html,
+    });
 
 }
 

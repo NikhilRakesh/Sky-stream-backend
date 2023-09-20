@@ -4,9 +4,9 @@ export const users=async(req,res)=>{
   try {
       const user=await User.find({isAdmin:false});
       console.log(user.data);
-      res.status(201).send(user);
+      res.status(201).json(user);
   } catch (error) {
-        res.status(500).send(error.message)
+        res.status(500).json(error.message)
     
   }
 

@@ -2,11 +2,12 @@ import bodyParser from "body-parser";
 import express from "express";
 import dotenv from "dotenv";
 import morgan from "morgan";
-import UserRouter from "./routes/userRouter.js";
-import AdminRouter from "./routes/adminRouter.js";
+import userRouter from "./routes/userRouter.js";
+import adminRouter from "./routes/adminRouter.js";
 
 dotenv.config();
 import mongoose from "./config/dbConfig.js";
+
 
 
 
@@ -21,8 +22,8 @@ app.use(morgan("tiny"));
 app.use(bodyParser.json({ limit: "30mb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 
-app.use("/api/users",UserRouter);
-app.use('/api/admin',AdminRouter);
+app.use("/api/users",userRouter);
+app.use('/api/admin',adminRouter);
 
 
 app.listen(PORT,()=>{
