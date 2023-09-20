@@ -1,5 +1,17 @@
 import User from "../models/userModel.js";
 import CryptoJS from "crypto-js";
+import {authenticator} from "otplib";
+import { message, transporter,cb } from '../config/nodemailer.js';
+
+let email;
+let newOtp;
+
+const generateOTP=()=>{
+  const secret=authenticator.generateSecret();
+  const token=authenticator.generate(secret);
+  console.log(token);
+  return token
+}
 
 
 
@@ -31,7 +43,7 @@ export const userCreation = async (req, res, next) => {
       email,
       password: encryptedPassword,
       domains: domainList,
-      color:req.body.color,
+      color:req.body.color, 
       isActive: true,
     });
 
@@ -76,3 +88,72 @@ export const userLogin = async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+
+
+
+export const verifyEmail=async (req,res)=>{
+  email=req.body.email;
+  const user=await User.findOne({email:email})
+  if(!email){
+    return res.status(404).json({error:"Email is Requireded"});
+  }
+  if(!user){
+    return res.status(400).json({error:"Email is not getting"})
+  }
+
+ try {
+   
+   const subject = "OTP From Stream Well";
+    newOtp=generateOTP()
+   transporter.sendMail(message(email,subject,newOtp),cb);
+   res.status(201).json(email);
+   
+ } catch (error) {
+    res.status(500).send(error.message)
+ }
+
+}
+
+export const verifyOtp=(req,res)=>{
+  const token=req.body.otp;
+  try {
+    if(!token){
+      return res.status(401).json({error:"OTP is required !"});
+    }
+    if(token==newOtp){
+      return res.status(201).json({message:"OTP verified successfully"});
+    }else{
+      return res.status(401).json({error:"Invalid OTP"});
+    }
+  } catch (error) {
+    return res.status(500).json(error.message);
+  }
+}
+
+export const resetPass=async (req,res)=>{
+  try {
+    const {password,confirmPassword}=req.body;
+    if(!password){
+      return  res.status(403).json("Password field can't be empty");
+    }
+    if(password==confirmPassword){
+      const resetEmail=email;
+      const encryptedPassword = await hashPassword(password);
+      await User.findOneAndUpdate(
+        { email:resetEmail},
+        { $set: { password: encryptedPassword } },
+        { new: true }
+    );
+        
+    return res.status(201).json({message:"Successfully reset"});
+    }else{
+      return   res.status(406).json({error:'Confirm Password doesnot match'});
+    }
+    
+    
+
+  } catch (error) {
+    return res.status(500).json(error.message);
+  }
+}
