@@ -2,11 +2,11 @@ import  express  from "express";
 import { users } from "../controllers/adminController.js";
 
 
-const AdminRouter=express.Router();
+const adminRouter=express.Router();
 
-AdminRouter.get('/users',users)
-
-
+adminRouter.get('/users',users)
 
 
-export default AdminRouter;
+
+
+export default adminRouter;
