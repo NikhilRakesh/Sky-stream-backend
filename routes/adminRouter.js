@@ -4,7 +4,9 @@ import { users } from "../controllers/adminController.js";
 
 const adminRouter=express.Router();
 
-adminRouter.get('/users',users)
+//CREATEING THE API FOR GETING THE USERS DETAILS
+adminRouter.get('/:id?',users) //DONE 
+
 
 
 
