@@ -20,7 +20,7 @@ export const message = (recipientMail,Subject,html) =>{
       from: process.env.EMAIL, // Sender address
       to: recipientMail, // List of recipients
       subject: Subject, // Subject line
-      text: "Hello, this is a test email sent from Node.js using Nodemailer!", //TODO correct message,
+      text: "Verify OTP", //DONE correct message,
       html: html,
     });
 

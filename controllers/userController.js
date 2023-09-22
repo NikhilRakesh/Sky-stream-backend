@@ -158,7 +158,7 @@ export const verifyEmail = async (req, res) => {
 export const verifyOtp = (req, res) => {
   
   try {
-    const token = req.body.otp; //GETING THE OTP FROM THE REQ.BODY
+    const {token} = req.body; //GETING THE OTP FROM THE REQ.BODY
     //IF NOT GETTING THE TOKEN THEN IT WILL RETURN THE ERROR MESSAGE
     if (!token) {
       return res.status(401).json({ error: "OTP is required !" });
