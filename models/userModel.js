@@ -33,8 +33,9 @@ const userSchema=new mongoose.Schema({
       resetPass:{
         type:Number,
         default:0
-      }
-});
+      },
+
+},{timestamps:true});
 
 
  const User=mongoose.model("userModel",userSchema);
