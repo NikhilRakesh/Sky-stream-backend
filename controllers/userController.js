@@ -47,10 +47,21 @@ export const userCreation = async (req, res, next) => {
     }
 
     //maping the name and index
-    const domainList = domain.map((name, index) => ({
-      name,
-      limit: limit[index],
-    }));
+    let domainList;
+    if(domain.length > 1)
+    {
+       domainList = domain.map((name, index) => ({
+        name,
+        limit: limit[index],
+      }));
+    }
+    else{
+      domainList = {
+        name:domain.name,
+        limit:domain.limit
+      }
+    }
+   
 
     //encrpting the password 
     const encryptedPassword = await hashPassword(password);
@@ -78,7 +89,9 @@ export const userCreation = async (req, res, next) => {
     newUser.token = token
 
     //saving the the objected data into mongodb
-    newUser.save();
+    newUser.save().then(()=>{
+      domainList={}
+    });
 
 
     newUser.password = decryptedPassword; //in the frontend the password wnt to show tha's why the password decrypting
@@ -108,6 +121,7 @@ export const userLogin = async (req, res) => {
         .status(401)
         .json({ message: "Unauthorized: Invalid credentials" });
     }
+    
 
     // Decrypt the stored hashed password
     const decryptedStoredPassword = await decryptPassword(user.password);

@@ -1,7 +1,6 @@
 {
     "todo-tree.general.statusBar": "tags",
     "todo-tree.general.tagGroups": {
-        
     },
     "todo-tree.highlights.useColourScheme": false,
     "todo-tree.highlights.customHighlight": {
@@ -42,5 +41,19 @@
     ],
     "todo-tree.highlights.defaultHighlight": {
     
-    }
+    },
+    "todo-tree.general.rootFolder": "",
+    "todo-tree.general.showActivityBarBadge": false,
+    "todo-tree.general.showIconsInsteadOfTagsInStatusBar": true,
+    "todo-tree.highlights.enabled": true,
+    "todo-tree.general.tags": [
+        "BUG",
+        "HACK",
+        "FIXME",
+        "TODO",
+        "XXX",
+        "[ ]",
+        "[x]",
+        "DONE"
+    ]
 }
