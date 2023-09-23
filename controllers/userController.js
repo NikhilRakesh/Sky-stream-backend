@@ -32,7 +32,7 @@ export const userCreation = async (req, res, next) => {
   try {
     // destructure values from req.body
     const { email, password, domain, color, limit } = req.body;
-
+    const {userID}=req.params; // This is for using the logged user id
     //email & password want to required
     if (!email || !password) {
       return res
@@ -69,11 +69,14 @@ export const userCreation = async (req, res, next) => {
 
     //assigning the data into obj for saving the mongodb
     const newUser = new User({
+      
       email,
       password: encryptedPassword,
       domains: domainList,
       color: color, //DONE Destrature body color -done
       isActive: true,
+      addedBy:userID //this is the param that get the logged user
+      
     })
 
     // Decrypting the password for response -its testing
