@@ -48,7 +48,7 @@ export const userCreation = async (req, res, next) => {
 
     //maping the name and index
     let domainList;
-    if(domain.length > 1)
+    if(typeof(domain)!=="string")
     {
        domainList = domain.map((name, index) => ({
         name,
@@ -57,8 +57,8 @@ export const userCreation = async (req, res, next) => {
     }
     else{
       domainList = {
-        name:domain.name,
-        limit:domain.limit
+        name:domain,
+        limit
       }
     }
    
@@ -92,7 +92,6 @@ export const userCreation = async (req, res, next) => {
     newUser.save().then(()=>{
       domainList={}
     });
-
 
     newUser.password = decryptedPassword; //in the frontend the password wnt to show tha's why the password decrypting
     res.status(201).json(newUser);//sending to the fr
@@ -168,6 +167,26 @@ export const verifyEmail = async (req, res) => {
   }
 };
 
+
+// TODO     UPDATE
+export const button = async(req,res) =>{
+  try {
+    const userId = req.body.id
+   if(req.body.addUser === "ON")
+   {
+     await User.findByIdAndUpdate({userId,addUser:true})
+   }
+   else
+   {
+    await User.findByIdAndUpdate({userId,addUser:false})
+   }
+
+  } catch (err) {
+    console.log(err);
+  }
+}
+ 
+
 //THIS METHOS IS TO VERIFY THE OTP
 export const verifyOtp = (req, res) => {
   
@@ -226,5 +245,5 @@ export const resetPass = async (req, res) => {
     
   } catch (error) {
     return res.status(500).json({ error: error.message });
-  }
+  }                
 };

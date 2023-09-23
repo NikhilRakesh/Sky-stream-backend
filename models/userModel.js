@@ -18,9 +18,13 @@ const userSchema=new mongoose.Schema({
         type : Boolean ,
          default : true
     },
-    isAdmin:{
+    superAdmin:{
         type :Boolean  ,
         default : false
+    },
+    isAdmin:{
+        type:Boolean,
+        default:false
     },
     color:{
         type: String,
@@ -33,7 +37,28 @@ const userSchema=new mongoose.Schema({
       resetPass:{
         type:Number,
         default:0
+      },
+      addUser:{
+        type:Boolean,
+        default:false
+      },
+      deleteUser:{
+        type:Boolean,
+        default:false
+      },
+      chanelLimit:{
+        type:Boolean,
+        default:false
+      },
+      createChanel:{
+        type:Boolean,
+        default:false
+      },
+      deleteChanel:{
+        type:Boolean,
+        default:false
       }
+
 });
 
 

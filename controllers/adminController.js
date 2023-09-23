@@ -8,7 +8,7 @@ export const users = async (req, res) => {
     
     //CHECKING THE CONDITION IF THERE IS NO ID THEN I WILL SHOW ALL THE USER DETAILS
     if (!id) {
-      const user = await User.find({ isAdmin: false });
+      const user = await User.find({ superAdmin: false });
       return res.status(201).json({ user });
     }
 
