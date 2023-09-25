@@ -32,7 +32,8 @@ export const userCreation = async (req, res, next) => {
   try {
     // destructure values from req.body
     const { email, password, domain, color, limit } = req.body;
-    const {userID}=req.params; // This is for using the logged user id
+    const {userID}=req.body; // This is for using the logged user id
+   
     //email & password want to required
     if (!email || !password) {
       return res
@@ -67,6 +68,23 @@ export const userCreation = async (req, res, next) => {
     const encryptedPassword = await hashPassword(password);
 
 
+    // to find the creating user is superAdmin or Not
+    let isAdmin;
+    if(userID){
+     
+      const userData = await User.findById({_id:userID})
+      
+      if(userData.superAdmin == true)
+      {
+        isAdmin = true
+      }
+      else
+      {
+        isAdmin = false
+      }
+    }
+    
+
     //assigning the data into obj for saving the mongodb
     const newUser = new User({
       
@@ -75,7 +93,9 @@ export const userCreation = async (req, res, next) => {
       domains: domainList,
       color: color, //DONE Destrature body color -done
       isActive: true,
-      addedBy:userID //this is the param that get the logged user
+      addedBy:userID, //this is the param that get the logged user
+      isAdmin
+      
       
     })
 
@@ -171,21 +191,52 @@ export const verifyEmail = async (req, res) => {
 };
 
 
-// TODO     UPDATE
+
 export const button = async(req,res) =>{
   try {
-    const userId = req.body.id
-   if(req.body.addUser === "ON")
-   {
-     await User.findByIdAndUpdate({userId,addUser:true})
+    
+    const userId = req.body.id // pass userid from the frontend
+    if(!userId)
+    {
+      return res.status(400).json({message:"userId not getting"})
+    }
+   let obj = {
+    addUser : false,
+    deleteUser: false,
+    chanelLimit: false,
+    createChanel:false,
+    deleteChanel:false
    }
-   else
+  //! addUser_ON, deleteUser_ON, chanelLimit_ON, createChannel_ON, deleteChannel_ON  These are the input from the frontend buttons -----------------------------------
+   
+   if(req.body.addUser === "addUser_ON")
    {
-    await User.findByIdAndUpdate({userId,addUser:false})
+    obj.addUser = true
+   }
+   if(req.body.deleteUser === "deleteUser_ON")
+   {
+    obj.deleteUser = true
+   }
+   if(req.body.chanelLimit==="chanelLimit_ON")
+   {
+    obj.chanelLimit = true
+   }
+   if(req.body.createChanel === "createChannel_ON")
+   {
+    obj.createChanel = true
+   }
+   if(req.body.deleteChanel === "deleteChannel_ON")
+   {
+    obj.createChanel = true
    }
 
+   
+   await User.findByIdAndUpdate({_id:userId},{$set:obj},{multi:true})
+   
+   return res.status(200).json({message:"Data Updated"})
+
   } catch (err) {
-    console.log(err);
+    console.log(err); 
   }
 }
  
