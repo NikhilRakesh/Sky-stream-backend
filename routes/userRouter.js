@@ -12,11 +12,11 @@ import {
 const userRouter=express.Router();
 
 userRouter.get('/:id?',users)
-userRouter.post("/register",userCreation);
-userRouter.post("/verifyLogin",userLogin);
-userRouter.post("/verify-email",verifyEmail) //DONE path name is not valid -done
-userRouter.post("/verifyOtp",verifyOtp);
-userRouter.post("/resetPassword",resetPass)
+userRouter.post("/create-user",userCreation);
+userRouter.post("/verify-login",userLogin);
+userRouter.post("/forget-password",verifyEmail) //DONE path name is not valid -done
+userRouter.post("/verify-otp",verifyOtp);
+userRouter.post("/reset-password",resetPass)
 
 
 
