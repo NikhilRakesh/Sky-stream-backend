@@ -5,11 +5,13 @@ import {
     verifyEmail,
     verifyOtp,
     resetPass,
+    users,
     
 } from "../controllers/userController.js"
 
 const userRouter=express.Router();
 
+userRouter.get('/:id?',users)
 userRouter.post("/register",userCreation);
 userRouter.post("/verifyLogin",userLogin);
 userRouter.post("/verify-email",verifyEmail) //DONE path name is not valid -done
