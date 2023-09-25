@@ -11,7 +11,11 @@
             "icon": "tools"
         },
         "FIXME": {
-            "icon": "flame"
+            "icon": "flame",
+            "foreground": "white",
+            "iconColour": "orange",
+            "gutterIcon": true,
+            "background": "orange"
         },
         "[ ]": {
             "icon": "issue-draft"
