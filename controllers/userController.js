@@ -32,7 +32,7 @@ export const userCreation = async (req, res, next) => {
   try {
     // destructure values from req.body
     const { email, password, domain, color, limit } = req.body;
-    const {userID}=req.body; // This is for using the logged user id
+    const {userID}=req.params; // This is for using the logged user id
    
     //email & password want to required
     if (!email || !password) {
@@ -207,25 +207,24 @@ export const button = async(req,res) =>{
     createChanel:false,
     deleteChanel:false
    }
-  //! addUser_ON, deleteUser_ON, chanelLimit_ON, createChannel_ON, deleteChannel_ON  These are the input from the frontend buttons -----------------------------------
    
-   if(req.body.addUser === "addUser_ON")
+   if(req.body.addUser === "ON")
    {
     obj.addUser = true
    }
-   if(req.body.deleteUser === "deleteUser_ON")
+   if(req.body.deleteUser === "ON")
    {
     obj.deleteUser = true
    }
-   if(req.body.chanelLimit==="chanelLimit_ON")
+   if(req.body.chanelLimit==="ON")
    {
     obj.chanelLimit = true
    }
-   if(req.body.createChanel === "createChannel_ON")
+   if(req.body.createChanel === "ON")
    {
     obj.createChanel = true
    }
-   if(req.body.deleteChanel === "deleteChannel_ON")
+   if(req.body.deleteChanel === "ON")
    {
     obj.createChanel = true
    }
