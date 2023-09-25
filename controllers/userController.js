@@ -82,7 +82,7 @@ export const userCreation = async (req, res, next) => {
       {
         isAdmin = false
       }
-    }
+    } 
     
 
     //assigning the data into obj for saving the mongodb
