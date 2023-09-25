@@ -19,7 +19,7 @@ app.use(bodyParser.json({ limit: "30mb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 
 app.use("/api/users",userRouter);
-app.use('/',channelRouter);
+app.use('/api/channel',channelRouter);
 
 
 app.listen(PORT,()=>{
