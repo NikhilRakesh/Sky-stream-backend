@@ -1,4 +1,3 @@
-const NodeMediaServer = require('node-media-server');
 
 const config = {
     rtmp: {
@@ -14,4 +13,4 @@ const config = {
     }
   };
 
-  module.exports = config;
+  export default config;

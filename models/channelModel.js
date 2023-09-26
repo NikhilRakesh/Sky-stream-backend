@@ -1,10 +1,16 @@
 import mongoose from "mongoose";
 
 const channelSchema = new mongoose.Schema({
+
+  userId:{
+    type:mongoose.Schema.Types.ObjectId,
+    ref:'User',
+    required:true
+  },
   
   name: {
     type: String,
-    required: true
+    required: true,
   },
   domain: {
     type: String,
@@ -12,7 +18,8 @@ const channelSchema = new mongoose.Schema({
   },
   streamKey:{
     type:String,
-    required:true
+    required:true,
+    unique:true
   }
   
 },

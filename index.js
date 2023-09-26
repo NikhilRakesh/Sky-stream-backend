@@ -3,10 +3,11 @@ import express from "express";
 import dotenv from "dotenv";
 import morgan from "morgan";
 import userRouter from "./routes/userRouter.js";
-import channelRouter from './routes/ChannelRouter.js'
-import helmet from 'helmet'
-import cors from 'cors'
-import os from 'os'
+import channelRouter from './routes/ChannelRouter.js';
+import helmet from 'helmet';
+import cors from 'cors';
+import os from 'os';
+import "./server.js";
 
 dotenv.config();
 import mongoose from "./config/dbConfig.js";
@@ -66,7 +67,8 @@ if (process.env.SERVER_TYPE === "production") {
   app.listen(PORT, () =>
     console.log(`Server ${process.pid} is running successfully on PORT ${PORT}`)
   );
-}
+}             
 
 
 export default app ;
+   
