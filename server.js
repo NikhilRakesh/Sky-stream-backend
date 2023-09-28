@@ -3,7 +3,7 @@ import nmsConfig from "./config/mediaServer.js";
 import Channel from "./models/channelModel.js";
 
 let channelArray = [];
- export const findChannel = (async()=>{
+ export const findChannel = async()=>{
   try{
    const channel = await Channel.find();
       channelArray = channel.map((data)=>{return data.streamKey})
@@ -11,7 +11,8 @@ let channelArray = [];
   {
      console.log(err);
   }
-})()
+}
+findChannel();
 
 const nms = new NodeMediaServer(nmsConfig)
 

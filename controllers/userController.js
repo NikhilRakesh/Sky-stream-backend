@@ -14,7 +14,7 @@ const generateOTP = () => {
   const token = authenticator.generate(secret);
   return token;
 };
-
+            
 //THIS METHOD IS USING FOR GENERATE A ENCRYPTED PASSWORD
 const hashPassword = async (pass) => {
   return CryptoJS.AES.encrypt(pass, process.env.SECRET_KEY).toString();
