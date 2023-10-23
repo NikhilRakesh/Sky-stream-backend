@@ -29,7 +29,7 @@ const decryptPassword = async (pass) => {
 export const userCreation = async (req, res, next) => {
   try {
     // destructure values from req.body
-    const { name,email, password, domain, color, limit ,addUser,deleteUser,createChannel,deleteChannel,expiryDate} = req.body;
+    const {name, email, password, domain, color, limit ,addUser,deleteChannel,createChannel,deleteUser,expiryDate} = req.body;
     const { userID } = req.params; // This is for using the logged user id
 
     //email & password want to required
@@ -134,6 +134,12 @@ export const userLogin = async (req, res) => {
     // Decrypt the stored hashed password
     const decryptedStoredPassword = await decryptPassword(user.password);
 
+    // DONE :Refactor the below  -done
+
+    //CHECKING THE PASSWORD IS CORECT OR NOT FOR LOGIN
+    if (password === decryptedStoredPassword) {
+      return res.status(200).json({ message: "Login successful", user }); //DONE usedate is not found in response  -Done
+    }
 
     //IF THE PASSWORD IS NOT SAME THEN IT WILL RETUN THE IN VALID MESSAGE
     if (password !== decryptedStoredPassword) {
@@ -141,18 +147,6 @@ export const userLogin = async (req, res) => {
         .status(401)
         .json({ message: "Unauthorized: Invalid credentials" });
     }
-    const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "2h",
-    });
-
-    //assigning the token into newUser
-    user.token = token;
-
-    
-      return res.status(200).json({ message: "Login successful", user });
-    
-
-    
   } catch (error) {
     return res.status(500).json({ message: "Internal Server Error" });
   }

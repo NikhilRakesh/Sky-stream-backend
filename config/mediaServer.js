@@ -25,7 +25,7 @@ const config = {
         app: "live",
         hls: true,
         hlsFlags: "[hls_time=2:hls_list_size=3:hls_flags=delete_segments]",
-        hlsKeep: true, 
+        hlsKeep: true,
         dash: true,
         dashFlags: "[f=dash:window_size=3:extra_window_size=5]",
         dashKeep: true,
@@ -42,13 +42,9 @@ const config = {
     tasks: [
       {
         app: "live",
-        mode: "pull",
-        edge: "rtmp://192.168.29.169:1936",
-      },
-      {
-        app: "live",
         mode: "push",
-        edge: "rtmp://192.168.29.169/live/1234",
+        edge: "rtmp://a.rtmp.youtube.com/live2/10k1-ghbs-c59k-4kkd-4xa5",
+        // name: "1234/10k1-ghbs-c59k-4kkd-4xa5",
       },
     ],
   },
