@@ -29,14 +29,14 @@ const decryptPassword = async (pass) => {
 export const userCreation = async (req, res, next) => {
   try {
     // destructure values from req.body
-    const { email, password, domain, color, limit,name } = req.body;
+    const {name, email, password, domain, color, limit ,addUser,deleteChannel,createChannel,deleteUser,expiryDate} = req.body;
     const { userID } = req.params; // This is for using the logged user id
 
     //email & password want to required
-    if (!email || !password) {
+    if (!name||!email || !password || !domain  || !limit || !addUser || !deleteUser || !createChannel || !deleteChannel || !expiryDate) {
       return res
         .status(400)
-        .json({ message: "Email and password are required." });
+        .json({ message: "Required all the feilds" });
     }
 
     //checking the email id is existing or not
@@ -84,19 +84,20 @@ export const userCreation = async (req, res, next) => {
       isActive: true,
       addedBy: userID, //this is the param that get the logged user
       isAdmin,
+      addUser,
+      deleteUser,
+      createChannel,
+      deleteChannel,
+      expiryDate
+
+
     });
 
     // Decrypting the password for response -its testing
     const decryptedPassword = await decryptPassword(newUser.password);
-
-    //creating the jwt token
-    const token = jwt.sign({ _id: newUser._id }, process.env.JWT_SECRET, {
-      expiresIn: "2h",
-    });
-
-    //assigning the token into newUser
-    newUser.token = token;
-
+    
+  
+  
     //saving the the objected data into mongodb
     newUser.save().then(() => {
       domainList = {};
@@ -135,17 +136,17 @@ export const userLogin = async (req, res) => {
 
     // DONE :Refactor the below  -done
 
+    //CHECKING THE PASSWORD IS CORECT OR NOT FOR LOGIN
+    if (password === decryptedStoredPassword) {
+      return res.status(200).json({ message: "Login successful", user }); //DONE usedate is not found in response  -Done
+    }
+
     //IF THE PASSWORD IS NOT SAME THEN IT WILL RETUN THE IN VALID MESSAGE
     if (password !== decryptedStoredPassword) {
       return res
         .status(401)
         .json({ message: "Unauthorized: Invalid credentials" });
     }
-
-    user.password = ''
-
-     res.status(200).json({ message: "Login successful", data:user });
-      //DONE usedate is not found in response  -Done
   } catch (error) {
     return res.status(500).json({ message: "Internal Server Error" });
   }
