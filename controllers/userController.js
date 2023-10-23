@@ -29,7 +29,7 @@ const decryptPassword = async (pass) => {
 export const userCreation = async (req, res, next) => {
   try {
     // destructure values from req.body
-    const { email, password, domain, color, limit } = req.body;
+    const { email, password, domain, color, limit,name } = req.body;
     const { userID } = req.params; // This is for using the logged user id
 
     //email & password want to required
@@ -76,6 +76,7 @@ export const userCreation = async (req, res, next) => {
 
     //assigning the data into obj for saving the mongodb
     const newUser = new User({
+      name,
       email,
       password: encryptedPassword,
       domains: domainList,
@@ -134,17 +135,17 @@ export const userLogin = async (req, res) => {
 
     // DONE :Refactor the below  -done
 
-    //CHECKING THE PASSWORD IS CORECT OR NOT FOR LOGIN
-    if (password === decryptedStoredPassword) {
-      return res.status(200).json({ message: "Login successful", user }); //DONE usedate is not found in response  -Done
-    }
-
     //IF THE PASSWORD IS NOT SAME THEN IT WILL RETUN THE IN VALID MESSAGE
     if (password !== decryptedStoredPassword) {
       return res
         .status(401)
         .json({ message: "Unauthorized: Invalid credentials" });
     }
+
+    user.password = ''
+
+     res.status(200).json({ message: "Login successful", data:user });
+      //DONE usedate is not found in response  -Done
   } catch (error) {
     return res.status(500).json({ message: "Internal Server Error" });
   }
