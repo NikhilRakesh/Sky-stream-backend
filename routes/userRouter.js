@@ -20,6 +20,9 @@ userRouter.post("/verify-otp",verifyOtp);
 userRouter.post("/reset-password",resetPass);
 userRouter.post("/user-permission",button);  
 
+// TODO Expiry Date update meathode
+// TODO Message Detele methode for Super Admin
+ 
 
 
  

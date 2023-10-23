@@ -2,9 +2,9 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
-    name:{
-      type:String,
-      required:true
+    name: {
+      type: String,
+      required: true,
     },
     email: {
       type: String,
@@ -22,9 +22,9 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    superAdmin:{
-        type :Boolean ,
-        default : false
+    superAdmin: {
+      type: Boolean,
+      default: false,
     },
     isAdmin: {
       type: Boolean,
@@ -61,6 +61,16 @@ const userSchema = new mongoose.Schema(
     deleteChanel: {
       type: Boolean,
       default: false,
+    },
+    message: {
+      block: {
+        type: Boolean,
+        default: false,
+      },
+      data: {
+        type: String,
+        default: null,
+      },
     },
   },
   { timestamps: true }
