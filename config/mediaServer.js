@@ -44,7 +44,7 @@ const config = {
         app: "live",
         mode: "push",
         edge: "rtmp://a.rtmp.youtube.com/live2/10k1-ghbs-c59k-4kkd-4xa5",
-        // name: "1234/10k1-ghbs-c59k-4kkd-4xa5",
+
       },
     ],
   },
