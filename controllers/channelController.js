@@ -1,4 +1,5 @@
 //creating the channel
+import App from "../models/appModel.js";
 import Channel from "../models/channelModel.js";
 import User from "../models/userModel.js";
 import { findChannel } from "../server.js";
@@ -9,22 +10,31 @@ import { findChannel } from "../server.js";
 
 export const createChannel= async (req,res)=>{
    try {
-      // Get userId from Global state
+
      const {name,domain,streamKey}=req.body; 
      const {userId}=req.params;
-    
-     const exist = await Channel.findOne({name:name})
-     
+
      if(!name||!domain){
          return res.status(401).json({message:"Please provide all fields"})
      }
     
-   if(exist)
-   {
-      return res.status(401).json({message:"Channel already exits!"})
-   }
+ 
+    let APP = await App.findOne({});
 
-     const key ="/live/"+streamKey;
+    if (!APP || APP.length <= 0) {
+      const app = new appSchema({
+        name: "live",
+        number: 1,
+      });
+      await app.save();
+      APP = await appSchema.findOne({});
+    }
+
+    let number = APP.number;
+
+    let userApp = "live" + number;
+
+     const key =userApp+'/'+streamKey;
      const newChannel=new Channel({
       userId,
         name:name,
@@ -33,6 +43,12 @@ export const createChannel= async (req,res)=>{
      });
      
      newChannel.save().then((data)=>{
+      const newNumber = number + 1;
+      App.findOneAndUpdate(
+        { _id: APP._id },
+        { $set: { number: newNumber } },
+        { new: true }
+      ).then((data) => console.log(data));
        findChannel();
         return res.status(201).json(data)
      }).catch(err=>{

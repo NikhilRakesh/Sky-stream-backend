@@ -3,24 +3,23 @@ import CryptoJS from "crypto-js";
 import { authenticator } from "otplib";
 import { message, transporter, cb } from "../config/nodemailer.js";
 import jwt from "jsonwebtoken";
+import appSchema from "../models/appModel.js";
 
-//THE EMAIL & newOtp IS CREATED FOR RESETING THE PASSWORD ITS GLOBAL VARIABLE
+
 let email;
-let newOtp; //DONE after the use the variable want to null
-
-//THIS METHOD IS USING FOR GENERATION THE OTP
+let newOtp; 
 const generateOTP = () => {
   const secret = authenticator.generateSecret();
   const token = authenticator.generate(secret);
   return token;
 };
-            
-//THIS METHOD IS USING FOR GENERATE A ENCRYPTED PASSWORD
+
+
 const hashPassword = async (pass) => {
   return CryptoJS.AES.encrypt(pass, process.env.SECRET_KEY).toString();
 };
 
-//THIS METHOD IS USING FOR DECRYPT THE PASSWORD
+
 const decryptPassword = async (pass) => {
   const bytes = CryptoJS.AES.decrypt(pass, process.env.SECRET_KEY);
   return bytes.toString(CryptoJS.enc.Utf8);
@@ -28,15 +27,42 @@ const decryptPassword = async (pass) => {
 
 export const userCreation = async (req, res, next) => {
   try {
-    // destructure values from req.body
-    const {name, email, password, domain, color, limit ,addUser,deleteChannel,createChannel,deleteUser,expiryDate} = req.body;
-    const { userID } = req.params; // This is for using the logged user id
+  
+    const {
+      name,
+      email,
+      password,
+      domain,
+      color,
+      limit,
+      addUser,
+      deleteChannel,
+      createChannel,
+      deleteUser,
+      expiryDate,
+      channelLimit,
+    } = req.body;
+    const { id } = req.params;
+    console.log(id);
+
+    if (!id) {
+      return res.status(400).json({ message: "Authorized user not found" });
+    }
 
     //email & password want to required
-    if (!name||!email || !password || !domain  || !limit || !addUser || !deleteUser || !createChannel || !deleteChannel || !expiryDate) {
-      return res
-        .status(400)
-        .json({ message: "Required all the feilds" });
+    if (
+      !name ||
+      !email ||
+      !password ||
+      !domain ||
+      !limit ||
+      !addUser ||
+      !deleteUser ||
+      !createChannel ||
+      !deleteChannel ||
+      !expiryDate
+    ) {
+      return res.status(400).json({ message: "Required all the feilds" });
     }
 
     //checking the email id is existing or not
@@ -59,13 +85,11 @@ export const userCreation = async (req, res, next) => {
       };
     }
 
-    //encrpting the password
     const encryptedPassword = await hashPassword(password);
 
-    // to find the creating user is superAdmin or Not
     let isAdmin;
-    if (userID) {
-      const userData = await User.findById({ _id: userID });
+    if (id) {
+      const userData = await User.findById({ _id: id });
 
       if (userData.superAdmin == true) {
         isAdmin = true;
@@ -74,83 +98,102 @@ export const userCreation = async (req, res, next) => {
       }
     }
 
+    let APP = await appSchema.findOne({});
+
+    if (!APP || APP.length <= 0) {
+      const app = new appSchema({
+        name: "live",
+        number: 1,
+      });
+      await app.save();
+      APP = await appSchema.findOne({});
+    }
+
+    let number = APP.number;
+
+    let userApp = "live" + number;
+
     //assigning the data into obj for saving the mongodb
     const newUser = new User({
       name,
       email,
       password: encryptedPassword,
       domains: domainList,
-      color: color, //DONE Destrature body color -done
+      color: color, 
       isActive: true,
-      addedBy: userID, //this is the param that get the logged user
+      addedBy: id, //this is the param that get the logged user
       isAdmin,
       addUser,
       deleteUser,
       createChannel,
       deleteChannel,
-      expiryDate
-
-
+      expiryDate,
+      channelLimit,
+      app: userApp,
     });
 
-    // Decrypting the password for response -its testing
+
     const decryptedPassword = await decryptPassword(newUser.password);
-    
-  
-  
+
     //saving the the objected data into mongodb
     newUser.save().then(() => {
       domainList = {};
+      const newNumber = number + 1;
+      appSchema
+        .findOneAndUpdate(
+          { _id: APP._id },
+          { $set: { number: newNumber } },
+          { new: true }
+        )
+        .then((data) => console.log(data));
     });
 
-    newUser.password = decryptedPassword; //in the frontend the password wnt to show tha's why the password decrypting
-    res.status(201).json(newUser); //sending to the fr
+    newUser.password = decryptedPassword; 
+    res.status(201).json(newUser); 
   } catch (error) {
-    res.status(500).json({ error: error.message }); //IF THE CODE HAVE ERROR THE CATCH WILL HANDLE WITHOUT BLOCKING
+    res.status(500).json({ error: error.message }); 
   }
 };
 
 export const userLogin = async (req, res) => {
   try {
-    const { email, password } = req.body; //GETTING THE VALUE FROM REQ.BODY
+    const { email, password } = req.body; 
 
-    //CHECKING THE EMAIL OR PASSWORD IS NULL THEN IT WILL SEND A MESSAGE
     if (!email || !password) {
       return res
         .status(400)
         .json({ message: "Bad Request: Email and password are required" });
     }
 
-    //GETTING THE USERS FROM THE MONGO EMAIL WITH THE EMAIL ID
+  
     const user = await User.findOne({ email: email });
 
-    //IF THERE IS NOT USER THEN IT WILL SHOW THE MESSAGE
     if (!user) {
       return res
         .status(401)
         .json({ message: "Unauthorized: Invalid credentials" });
     }
 
-    // Decrypt the stored hashed password
-    const decryptedStoredPassword = await decryptPassword(user.password);
 
-    // DONE :Refactor the below  -done
 
-    //CHECKING THE PASSWORD IS CORECT OR NOT FOR LOGIN
-    if (password === decryptedStoredPassword) {
-      return res.status(200).json({ message: "Login successful", user }); //DONE usedate is not found in response  -Done
-    }
 
-    //IF THE PASSWORD IS NOT SAME THEN IT WILL RETUN THE IN VALID MESSAGE
-    if (password !== decryptedStoredPassword) {
+    if (password !== user.password) {
       return res
         .status(401)
         .json({ message: "Unauthorized: Invalid credentials" });
     }
+
+    
+    if (password === user.password) {
+      return res.status(200).json({ message: "Login successful", data:user });
+    }
+   
   } catch (error) {
     return res.status(500).json({ message: "Internal Server Error" });
   }
-};
+
+}
+
 
 //THIS IS FOR RESETING THE PASSWORD
 //FIRST WE WANT TO GET THE EMAIL WHICH IS TO RESET THE PASSWORD
@@ -178,41 +221,29 @@ export const verifyEmail = async (req, res) => {
 
 export const button = async (req, res) => {
   try {
-    const userId = req.body.id; // pass userid from the frontend
-    if (!userId) {
+    const { id, addUser, deleteUser, channelLimit, createChanel, deleteChanel } =
+      req.body;
+    console.log(req.body);
+
+    console.log('------------------------------');
+
+    if (!id) {
       return res.status(400).json({ message: "userId not getting" });
     }
+
     let obj = {
-      addUser: false,
-      deleteUser: false,
-      chanelLimit: false,
-      createChanel: false,
-      deleteChanel: false,
+      addUser,
+      deleteUser,
+      channelLimit ,
+      createChanel,
+      deleteChanel,
     };
 
-    if (req.body.addUser === "ON") {
-      obj.addUser = true;
-    }
-    if (req.body.deleteUser === "ON") {
-      obj.deleteUser = true;
-    }
-    if (req.body.chanelLimit === "ON") {
-      obj.chanelLimit = true;
-    }
-    if (req.body.createChanel === "ON") {
-      obj.createChanel = true;
-    }
-    if (req.body.deleteChanel === "ON") {
-      obj.createChanel = true;
-    }
+   const updatedUser = await User.findByIdAndUpdate({ _id: id }, { $set: obj }, { multi: true }).then((data)=>{
+      console.log(data);
+    })
 
-    await User.findByIdAndUpdate(
-      { _id: userId },
-      { $set: obj },
-      { multi: true }
-    );
-
-    return res.status(200).json({ message: "Data Updated" });
+    return res.status(200).json({ message: "Data Updated", data: updatedUser });
   } catch (err) {
     console.log(err);
   }
@@ -248,7 +279,7 @@ export const resetPass = async (req, res) => {
     if (!password) {
       return res.status(403).json({ error: "Password field can't be empty" });
     }
-    //DONE DESTRUCTURE  -done
+   
 
     //if the confirm password and password is not same then it will return a error message
     if (password !== confirmPassword) {

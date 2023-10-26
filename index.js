@@ -8,10 +8,11 @@ import helmet from 'helmet';
 import cors from 'cors';
 import os from 'os';
 import "./server.js";
-
 dotenv.config();
 import mongoose from "./config/dbConfig.js";
 import cluster from "cluster";
+import StatsRouter from "./routes/statsRoute.js";
+import messageRoute from "./routes/messageRouter.js";
 
 
 const PORT=process.env.PORT||5000;
@@ -24,10 +25,12 @@ app.use(helmet.crossOriginResourcePolicy({policy:'cross-origin'}))
 app.use(morgan("common"));
 app.use(bodyParser.json({ limit: "30mb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
-app.use(cors())
+app.use(cors('*'))
 
 app.use("/api/users",userRouter);
 app.use('/api/channel',channelRouter);
+app.use("/api/stats", StatsRouter);
+app.use('/api/message',messageRoute);
 
 
 

@@ -1,4 +1,4 @@
-const config = {
+const nmsConfig = {
   rtmp: {
     port: 1935,
     chunk_size: 60000,
@@ -37,17 +37,16 @@ const config = {
       },
     ],
   },
-  relay: {
+  relay: { 
     ffmpeg: "/usr/bin/ffmpeg",
     tasks: [
       {
         app: "live",
         mode: "push",
-        edge: "rtmp://a.rtmp.youtube.com/live2/10k1-ghbs-c59k-4kkd-4xa5",
-
+        edge: "rtmp://192.168.29.169/live/2",
       },
     ],
   },
 };
 
-export default config;
+export default nmsConfig;

@@ -12,7 +12,7 @@ mongoose
     console.log("DB connected");
   })
   .catch((e) => {
-    console.log(e.message);
+    console.log(e.message); 
   });
 
 export default mongoose;

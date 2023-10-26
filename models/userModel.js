@@ -3,8 +3,8 @@ import mongoose from "mongoose";
 const userSchema = new mongoose.Schema(
   {
     name: {
-        type: String,
-        required: true,
+      type: String,
+      required: true,
     },
     email: {
       type: String,
@@ -42,6 +42,9 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    addedBy: {
+      type: String,
+    },
     addUser: {
       type: Boolean,
       default: false,
@@ -50,15 +53,15 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    chanelLimit: {
+    channelLimit: {
+      type: Number,
+      default: 0,
+    },
+    createChannel: {
       type: Boolean,
       default: false,
     },
-    createChanel: {
-      type: Boolean,
-      default: false,
-    },
-    deleteChanel: {
+    deleteChannel: {
       type: Boolean,
       default: false,
     },
@@ -71,6 +74,14 @@ const userSchema = new mongoose.Schema(
         type: String,
         default: null,
       },
+    },
+    app: {
+      type: String,
+      default: null,
+    },
+    expiryDate: {
+      type: Date,
+      default: null,
     },
   },
   { timestamps: true }
