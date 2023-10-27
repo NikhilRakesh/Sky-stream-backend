@@ -1,3 +1,4 @@
+import Message from "../models/contactModel.js";
 import User from "../models/userModel.js";
 
 export const addMessage = async (req, res) => {
@@ -67,3 +68,46 @@ export const deleteMessage = async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+
+
+export const contactUs = async (req, res) => {
+  try {
+    const {name,email,contact,message} = req.body
+
+    if(!name||!email||!contact||!message){
+      return res.status(401).json({message:"Please provide all fields"})
+    }
+
+    const newMessage = new Message({
+      name,
+      email,
+      contact,
+      message
+    })
+    
+    newMessage.save().then((data)=>{
+      return res.status(201).json({message:"Message sent successfully",data:data})
+    }).catch(err=>{
+      return res.status(500).json({error:err.message})
+    })
+
+  } catch (error) {
+    
+    return res.status(500).json({message:"Internal Server Error"})
+
+  }
+
+}
+
+  
+ export const getMessage = async (req, res) => {
+    try {
+      
+      const data = await Message.find({}).sort({createdAt:-1})
+      return res.status(201).json({data:data})
+
+    } catch (error) {
+      
+    }
+  }

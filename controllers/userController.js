@@ -28,6 +28,8 @@ const decryptPassword = async (pass) => {
 export const userCreation = async (req, res, next) => {
   try {
   
+    console.log(req.body);
+
     const {
       name,
       email,
@@ -49,23 +51,6 @@ export const userCreation = async (req, res, next) => {
       return res.status(400).json({ message: "Authorized user not found" });
     }
 
-    //email & password want to required
-    if (
-      !name ||
-      !email ||
-      !password ||
-      !domain ||
-      !limit ||
-      !addUser ||
-      !deleteUser ||
-      !createChannel ||
-      !deleteChannel ||
-      !expiryDate
-    ) {
-      return res.status(400).json({ message: "Required all the feilds" });
-    }
-
-    //checking the email id is existing or not
     const user = await User.findOne({ email: email });
     if (user) {
       return res.status(409).send({ error: "User already exists" });
@@ -149,7 +134,7 @@ export const userCreation = async (req, res, next) => {
     });
 
     newUser.password = decryptedPassword; 
-    res.status(201).json(newUser); 
+    res.status(201).json({ message: "User created successfully", data: newUser}); 
   } catch (error) {
     res.status(500).json({ error: error.message }); 
   }
@@ -183,10 +168,18 @@ export const userLogin = async (req, res) => {
         .json({ message: "Unauthorized: Invalid credentials" });
     }
 
-    
-    if (password === user.password) {
-      return res.status(200).json({ message: "Login successful", data:user });
-    }
+    const token =  jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRE,
+    });
+
+    user.password = null;
+
+    res.cookie(String(user._id), token, {
+      path: "/",
+      expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
+      httpOnly: true,
+      sameSite: "lax",
+    }).status(200).json({ message: "Login successful", data:user });
    
   } catch (error) {
     return res.status(500).json({ message: "Internal Server Error" });

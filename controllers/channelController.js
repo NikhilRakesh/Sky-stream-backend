@@ -60,3 +60,36 @@ export const createChannel= async (req,res)=>{
 }
 
 
+export const getChannel=async (req,res)=>{
+  try {
+    
+    const {userId}=req.params;
+
+    if(!userId){
+      return res.status(401).json({message:"user Auth failed"})
+    }
+
+    const user = await User.findById({_id:userId})
+
+    
+    if(user.superAdmin){
+      
+      const channel = await Channel.find({})
+
+      return res.status(201).json({data:channel})
+
+    }
+    
+    const channels=await Channel.find({userId:userId});
+
+    console.log(channels);
+
+    return res.status(201).json({data:channels})
+
+
+  } catch (error) {
+    
+    return res.status(500).json({message:"Internal Server Error"})
+
+  }
+}
