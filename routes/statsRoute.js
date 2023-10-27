@@ -6,7 +6,7 @@ const StatsRouter = express.Router();
 
 StatsRouter.get("/stream", getStreamStats)
 StatsRouter.get("/system", getSystemStats)
-StatsRouter.get("/live-now", getLiveNow);
+StatsRouter.get("/live-now/:userId", getLiveNow);
 
 
 export default StatsRouter;

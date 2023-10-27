@@ -14,6 +14,8 @@ export const createChannel= async (req,res)=>{
      const {name,domain,streamKey}=req.body; 
      const {userId}=req.params;
 
+     console.log('req.body',req.body)
+
      if(!name||!domain){
          return res.status(401).json({message:"Please provide all fields"})
      }
@@ -22,19 +24,19 @@ export const createChannel= async (req,res)=>{
     let APP = await App.findOne({});
 
     if (!APP || APP.length <= 0) {
-      const app = new appSchema({
+      const app = new App({
         name: "live",
         number: 1,
       });
       await app.save();
-      APP = await appSchema.findOne({});
+      APP = await App.findOne({});
     }
 
     let number = APP.number;
 
     let userApp = "live" + number;
 
-     const key =userApp+'/'+streamKey;
+     const key ='/'+userApp+'/'+streamKey;
      const newChannel=new Channel({
       userId,
         name:name,
@@ -55,6 +57,7 @@ export const createChannel= async (req,res)=>{
         return res.status(500).json({error:err.message})
      })
    } catch (error) {
+    console.log(error.message)
     return res.status(500).json({message:"Internal Server Error"})
    }
 }

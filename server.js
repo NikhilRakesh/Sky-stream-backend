@@ -5,6 +5,8 @@ import ffmpeg from "fluent-ffmpeg";
 import lodash from "lodash";
 import Logger from "Logger";
 import App from "./models/appModel.js";
+import User from "./models/userModel.js";
+import { getDate } from "./config/getDate.js";
 
 let channelArray = [];
 let transTasksArray = [];
@@ -23,8 +25,24 @@ await findChannel();
 
 const loadConfig = async () => {
   const tasks = await App.findOne({});
-  let number = tasks.number;
-
+  let number;
+  let name
+  if(!tasks){
+   transTasksArray.push({
+     app: "live1",
+     hls: true,
+     hlsFlags: "[hls_time=2:hls_list_size=3:hls_flags=delete_segments]",
+     hlsKeep: true,
+     dash: true,
+     dashFlags: "[f=dash:window_size=3:extra_window_size=5]",
+     dashKeep: true,
+     mp4: true,
+     mp4Flags: "[movflags=frag_keyframe+empty_moov]",
+   });
+   return
+  }
+  number = tasks.number
+ 
   for (let i = 1; i <= number; i++) {
     transTasksArray.push({
       app: tasks.name + i,
@@ -34,9 +52,6 @@ const loadConfig = async () => {
       dash: true,
       dashFlags: "[f=dash:window_size=3:extra_window_size=5]",
       dashKeep: true,
-    });
-    transTasksArray.push({
-      app: tasks.name + i,
       mp4: true,
       mp4Flags: "[movflags=frag_keyframe+empty_moov]",
     });
@@ -93,12 +108,35 @@ const nms = new NodeMediaServer({
 nms.run();
 
 nms.on("prePublish", async (id, StreamPath, args) => {
-  // const isValidStreamKey = channelArray.includes(StreamPath);
-  // if (!isValidStreamKey) {
-  //   const session = nms.getSession(id);
-  //   session.reject();
-  // }
-  
+  const isValidStreamKey = channelArray.includes(StreamPath)
+
+  if(!isValidStreamKey){
+     const session = nms.getSession(id);
+     return session.reject();
+  }
+
+  const channel = await Channel.findOne({ streamKey: StreamPath })
+
+  const user = await User.findById({_id:channel.userId})
+
+  if(!user.isActive ){
+     const session = nms.getSession(id);
+    return session.reject();
+  }
+
+
+
+
+  const startTime =  getDate()
+
+  console.log('start-time',startTime);
+
+  await Channel.findOneAndUpdate(
+    { streamKey: StreamPath },
+    { $set: { status: true, startTime: startTime } },
+    { new: true, multi: true }
+  );
+
 });
 
 nms.on("postPublish", async (id, StreamPath, args) => {
@@ -114,11 +152,14 @@ nms.on("postPublish", async (id, StreamPath, args) => {
 
 
 
-nms.on("donePublish", (id, StreamPath, args) => {
-  console.log(
-    "[NodeEvent on donePublish]",
-    `id=${id} StreamPath=${StreamPath} args=${JSON.stringify(args)}`
-  );
+nms.on("donePublish", async (id, StreamPath, args) => {
+  console.log('------------------------------------DonePublish------------------------------------')
+  await Channel.findOneAndUpdate(
+    { streamKey: StreamPath },
+    { $set: { status: false, startTime: null } },
+    { new: true ,multi:true}
+  ).then((data)=>console.log(data))
+
 });
 
 // nms.on("prePlay", (id, StreamPath, args) => {
@@ -143,3 +184,7 @@ nms.on("donePublish", (id, StreamPath, args) => {
 //     `id=${id} StreamPath=${StreamPath} args=${JSON.stringify(args)}`
 //   );
 // });
+
+
+
+export default nms
