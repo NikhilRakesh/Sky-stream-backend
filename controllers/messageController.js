@@ -6,7 +6,7 @@ export const addMessage = async (req, res) => {
   try {
     
 
-    const { message, to, block } = req.body;
+    const { message, to, block ,subject} = req.body;
     console.log('req.body',req.body)
     
     const { id } = req.params;
@@ -28,6 +28,7 @@ export const addMessage = async (req, res) => {
     let newMessage = {
       block: block,
       data: message,
+      subject:subject
     };
 
     const Updated = await User.findByIdAndUpdate(

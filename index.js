@@ -13,6 +13,7 @@ import mongoose from "./config/dbConfig.js";
 import cluster from "cluster";
 import StatsRouter from "./routes/statsRoute.js";
 import messageRoute from "./routes/messageRouter.js";
+import postRouter from "./routes/pushRouter.js";
 
 
 const PORT=process.env.PORT||5000;
@@ -31,6 +32,7 @@ app.use("/api/users",userRouter);
 app.use('/api/channel',channelRouter);
 app.use("/api/stats", StatsRouter);
 app.use('/api/message',messageRoute);
+app.use('/api/push',postRouter)
 
 
 

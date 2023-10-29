@@ -7,6 +7,7 @@ import {
     resetPass,
     users,
     button,
+    deleteUser,
     
 } from "../controllers/userController.js"
 
@@ -18,7 +19,8 @@ userRouter.post("/verify-login",userLogin);
 userRouter.post("/forget-password",verifyEmail); //DONE path name is not valid -done
 userRouter.post("/verify-otp",verifyOtp);
 userRouter.post("/reset-password",resetPass);
-userRouter.post("/user-permission",button);  
+userRouter.post("/user-permission/:id?",button);  
+userRouter.get("/delete/:id?/:userId?",deleteUser);
 
 // TODO Expiry Date update meathode
 // TODO Message Detele methode for Super Admin

@@ -6,6 +6,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    status: {
+      type: Boolean,
+      default: false,
+    },
     email: {
       type: String,
       required: true,
@@ -43,7 +47,7 @@ const userSchema = new mongoose.Schema(
       default: 0,
     },
     addedBy: {
-      type: String,
+      type: mongoose.Schema.ObjectId,
     },
     addUser: {
       type: Boolean,
@@ -74,6 +78,10 @@ const userSchema = new mongoose.Schema(
         type: String,
         default: null,
       },
+      subject:{
+        type:String,
+        default:null
+      }
     },
     app: {
       type: String,

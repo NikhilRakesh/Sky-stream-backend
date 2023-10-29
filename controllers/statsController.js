@@ -13,13 +13,13 @@ export const getSystemStats = async (req, res) => {
     );
 
     let serverStats = {
-      inBandwidth: data.net.inbytes,
-      outBandwidth: data.net.outbytes,
+      inBandwidth: Math.floor(data.net.inbytes / 125000) || 0,
+      outBandwidth: Math.floor(data.net.outbytes / 125000) || 0,
       cpuLoad: data.cpu.load,
       totalMemoryUsage,
     };
 
-    res.status(200).json({ serverStats });
+    res.status(200).json({ data:serverStats });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

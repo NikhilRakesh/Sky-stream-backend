@@ -5,20 +5,17 @@ import { message, transporter, cb } from "../config/nodemailer.js";
 import jwt from "jsonwebtoken";
 import appSchema from "../models/appModel.js";
 
-
 let email;
-let newOtp; 
+let newOtp;
 const generateOTP = () => {
   const secret = authenticator.generateSecret();
   const token = authenticator.generate(secret);
   return token;
 };
 
-
 const hashPassword = async (pass) => {
   return CryptoJS.AES.encrypt(pass, process.env.SECRET_KEY).toString();
 };
-
 
 const decryptPassword = async (pass) => {
   const bytes = CryptoJS.AES.decrypt(pass, process.env.SECRET_KEY);
@@ -27,9 +24,6 @@ const decryptPassword = async (pass) => {
 
 export const userCreation = async (req, res, next) => {
   try {
-  
-    console.log(req.body);
-
     const {
       name,
       email,
@@ -45,18 +39,26 @@ export const userCreation = async (req, res, next) => {
       channelLimit,
     } = req.body;
     const { id } = req.params;
-    console.log(id);
+
+    console.log('id',id)
+    console.log('Body',req.body)
 
     if (!id) {
       return res.status(400).json({ message: "Authorized user not found" });
     }
 
+    const userData = await User.findById({ _id: id });
+
+    if (!userData.addUser) {
+      return res.status(409).json({ error: "Not Authorized" });
+    }
+
     const user = await User.findOne({ email: email });
+
     if (user) {
       return res.status(409).send({ error: "User already exists" });
     }
 
-    //maping the name and index
     let domainList;
     if (typeof domain !== "string") {
       domainList = domain.map((name, index) => ({
@@ -70,8 +72,6 @@ export const userCreation = async (req, res, next) => {
       };
     }
 
-    const encryptedPassword = await hashPassword(password);
-
     let isAdmin;
     if (id) {
       const userData = await User.findById({ _id: id });
@@ -83,28 +83,28 @@ export const userCreation = async (req, res, next) => {
       }
     }
 
-    let APP = await appSchema.findOne({});
+    // let APP = await appSchema.findOne({});
 
-    if (!APP || APP.length <= 0) {
-      const app = new appSchema({
-        name: "live",
-        number: 1,
-      });
-      await app.save();
-      APP = await appSchema.findOne({});
-    }
+    // if (!APP || APP.length <= 0) {
+    //   const app = new appSchema({
+    //     name: "live",
+    //     number: 1,
+    //   });
+    //   await app.save();
+    //   APP = await appSchema.findOne({});
+    // }
 
-    let number = APP.number;
+    // let number = APP.number;
 
-    let userApp = "live" + number;
+    // let userApp = "live" + number;
 
     //assigning the data into obj for saving the mongodb
     const newUser = new User({
       name,
       email,
-      password: encryptedPassword,
+      password: password,
       domains: domainList,
-      color: color, 
+      color: color,
       isActive: true,
       addedBy: id, //this is the param that get the logged user
       isAdmin,
@@ -114,9 +114,7 @@ export const userCreation = async (req, res, next) => {
       deleteChannel,
       expiryDate,
       channelLimit,
-      app: userApp,
     });
-
 
     const decryptedPassword = await decryptPassword(newUser.password);
 
@@ -131,18 +129,21 @@ export const userCreation = async (req, res, next) => {
           { new: true }
         )
         .then((data) => console.log(data));
-    });
+    }).then((data)=>console.log(data)).catch((err)=>console.log(err))
 
-    newUser.password = decryptedPassword; 
-    res.status(201).json({ message: "User created successfully", data: newUser}); 
+    newUser.password = password;
+    res
+      .status(201)
+      .json({ message: "User created successfully", data: newUser });
   } catch (error) {
-    res.status(500).json({ error: error.message }); 
+    console.log(error.message)
+    res.status(500).json({ error: error.message });
   }
 };
 
 export const userLogin = async (req, res) => {
   try {
-    const { email, password } = req.body; 
+    const { email, password } = req.body;
 
     if (!email || !password) {
       return res
@@ -150,7 +151,6 @@ export const userLogin = async (req, res) => {
         .json({ message: "Bad Request: Email and password are required" });
     }
 
-  
     const user = await User.findOne({ email: email });
 
     if (!user) {
@@ -159,34 +159,31 @@ export const userLogin = async (req, res) => {
         .json({ message: "Unauthorized: Invalid credentials" });
     }
 
-
-
-
     if (password !== user.password) {
       return res
         .status(401)
         .json({ message: "Unauthorized: Invalid credentials" });
     }
 
-    const token =  jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRE,
     });
 
     user.password = null;
 
-    res.cookie(String(user._id), token, {
-      path: "/",
-      expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
-      httpOnly: true,
-      sameSite: "lax",
-    }).status(200).json({ message: "Login successful", data:user });
-   
+    res
+      .cookie(String(user._id), token, {
+        path: "/",
+        expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
+        httpOnly: true,
+        sameSite: "lax",
+      })
+      .status(200)
+      .json({ message: "Login successful", data: user });
   } catch (error) {
     return res.status(500).json({ message: "Internal Server Error" });
   }
-
-}
-
+};
 
 //THIS IS FOR RESETING THE PASSWORD
 //FIRST WE WANT TO GET THE EMAIL WHICH IS TO RESET THE PASSWORD
@@ -214,29 +211,25 @@ export const verifyEmail = async (req, res) => {
 
 export const button = async (req, res) => {
   try {
-    const { id, addUser, deleteUser, channelLimit, createChanel, deleteChanel } =
-      req.body;
-    console.log(req.body);
+    const {
+      ...body
+    } = req.body;
 
-    console.log('------------------------------');
+    const { id  } = req.params;
+
 
     if (!id) {
-      return res.status(400).json({ message: "userId not getting" });
+      return res.status(400).json({ message: "userId not getting",data:req.body });
     }
+    const updatedUser = await User.findByIdAndUpdate(
+      { _id: id },
+      { $set: body },
+      { multi: true }
+    ).then((data) => {
+      console.log(data)
+      res.status(200).json({ message: "Data Updated", data: data });
+    }).catch((err)=>console.log(err.message))
 
-    let obj = {
-      addUser,
-      deleteUser,
-      channelLimit ,
-      createChanel,
-      deleteChanel,
-    };
-
-   const updatedUser = await User.findByIdAndUpdate({ _id: id }, { $set: obj }, { multi: true }).then((data)=>{
-      console.log(data);
-    })
-
-    return res.status(200).json({ message: "Data Updated", data: updatedUser });
   } catch (err) {
     console.log(err);
   }
@@ -272,7 +265,6 @@ export const resetPass = async (req, res) => {
     if (!password) {
       return res.status(403).json({ error: "Password field can't be empty" });
     }
-   
 
     //if the confirm password and password is not same then it will return a error message
     if (password !== confirmPassword) {
@@ -302,29 +294,78 @@ export const resetPass = async (req, res) => {
 
 export const users = async (req, res) => {
   try {
-    const { id } = req.params; //IF THE ID IS GETTING FROM THE PARAMS THEN IT WILL SAVE ON THE VARIABLE ID
+    const { id } = req.params;
 
-    //CHECKING THE CONDITION IF THERE IS NO ID THEN I WILL SHOW ALL THE USER DETAILS
+    console.log("id", id);
+
+    let user;
+
     if (!id) {
-      const user = await User.find({ superAdmin: false });
+      user = await User.find({ superAdmin: true }, { password: 0 }).sort({
+        createdAt: -1,
+      });
       return res.status(201).json({ user });
     }
 
-    //CHECKING THECONDITION IF THE ID THEN IT WILL RETURN THE MATCHED FROM FROM THE USER LIST
-    if (id) {
-      const user = await User.findById(id); //GET THE USERES FROM THE MONGODB
+    user = await User.findById({ _id: id }, { password: 0 }).sort({
+      createdAt: -1,
+    });
 
-      //CHECKING THE CONDITION IF THE USER IS NOT THERE IN THE MONGODB
+    if (!user.superAdmin) {
+      user = await User.findById({ addedBy: id }, { password: 0 }).sort({
+        createdAt: -1,
+      });
+
       if (!user) {
         return res
           .status(401)
           .json({ error: `No such a user by this id ${id}` });
       }
 
-      // RETURNING IF THE USER IS THERE
       return res.status(201).json({ user });
     }
+
+    user = await User.find({ superAdmin: false }, { password: 0 }).sort({
+      createdAt: -1,
+    });
+
+    return res.status(201).json({ user });
   } catch (error) {
-    res.status(500).json(error.message); //HANDLING THE ERROR IF THESE CODE NOT WORKING THEN IT WILL RETURN THE CATCH MATHOD AND HANDLE THE ERROR
+    res.status(500).json(error.message);
   }
 };
+
+
+export const deleteUser = async (req, res) => {
+  try {
+    
+    const { id ,userId } = req.params;
+
+    console.log('id',id)
+    console.log('userId',userId)
+
+    if (!id) {
+      return res.status(401).json({ message: "Not authorized" });
+    }
+
+    const admin = User.findById({ _id: id });
+
+    if(!admin.deleteUser){
+      return res.status(401).json({message:"Not Authorized to delete"})
+    }
+
+    if(!userId){
+      return res.status(401).json({message:"User Id not found"})
+    }
+
+    await User.findByIdAndDelete({ _id: userId }).then((data) => {
+      res.status(204).json({ message: "No Content" });
+    }).catch((err)=>console.log(err.message))
+
+    
+  } catch (error) {
+    
+    res.status(500).json({ message: "Internal Server error" });
+
+  }
+}

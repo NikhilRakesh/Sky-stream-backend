@@ -2,7 +2,7 @@
 import App from "../models/appModel.js";
 import Channel from "../models/channelModel.js";
 import User from "../models/userModel.js";
-import { findChannel } from "../server.js";
+
 
 
 
@@ -51,11 +51,13 @@ export const createChannel= async (req,res)=>{
         { $set: { number: newNumber } },
         { new: true }
       ).then((data) => console.log(data));
-       findChannel();
         return res.status(201).json(data)
      }).catch(err=>{
+      console.log(err.message)
         return res.status(500).json({error:err.message})
      })
+
+
    } catch (error) {
     console.log(error.message)
     return res.status(500).json({message:"Internal Server Error"})
@@ -94,5 +96,24 @@ export const getChannel=async (req,res)=>{
     
     return res.status(500).json({message:"Internal Server Error"})
 
+  }
+}
+
+
+
+export const deleteChannel=async (req,res)=>{
+  try {
+    const {channelId}=req.params;
+
+    if(!channelId){
+      return res.status(401).json({message:"Channel Id not found"})
+    }
+
+    const channel = await Channel.findByIdAndDelete({_id:channelId})
+
+    return res.status(204).json({message:"Channel deleted"})
+
+  } catch (error) {
+    return res.status(500).json({message:"Internal Server Error"})
   }
 }
