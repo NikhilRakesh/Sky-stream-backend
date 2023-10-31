@@ -1,5 +1,4 @@
 import User from "../models/userModel.js";
-import CryptoJS from "crypto-js";
 import { authenticator } from "otplib";
 import { message, transporter, cb } from "../config/nodemailer.js";
 import jwt from "jsonwebtoken";
@@ -13,14 +12,6 @@ const generateOTP = () => {
   return token;
 };
 
-const hashPassword = async (pass) => {
-  return CryptoJS.AES.encrypt(pass, process.env.SECRET_KEY).toString();
-};
-
-const decryptPassword = async (pass) => {
-  const bytes = CryptoJS.AES.decrypt(pass, process.env.SECRET_KEY);
-  return bytes.toString(CryptoJS.enc.Utf8);
-};
 
 export const userCreation = async (req, res, next) => {
   try {
@@ -36,12 +27,8 @@ export const userCreation = async (req, res, next) => {
       createChannel,
       deleteUser,
       expiryDate,
-      channelLimit,
     } = req.body;
     const { id } = req.params;
-
-    console.log('id',id)
-    console.log('Body',req.body)
 
     if (!id) {
       return res.status(400).json({ message: "Authorized user not found" });
@@ -59,23 +46,10 @@ export const userCreation = async (req, res, next) => {
       return res.status(409).send({ error: "User already exists" });
     }
 
-    let domainList;
-    if (typeof domain !== "string") {
-      domainList = domain.map((name, index) => ({
-        name,
-        limit: limit[index],
-      }));
-    } else {
-      domainList = {
-        name: domain,
-        limit,
-      };
-    }
-
+  
     let isAdmin;
     if (id) {
       const userData = await User.findById({ _id: id });
-
       if (userData.superAdmin == true) {
         isAdmin = true;
       } else {
@@ -83,53 +57,26 @@ export const userCreation = async (req, res, next) => {
       }
     }
 
-    // let APP = await appSchema.findOne({});
-
-    // if (!APP || APP.length <= 0) {
-    //   const app = new appSchema({
-    //     name: "live",
-    //     number: 1,
-    //   });
-    //   await app.save();
-    //   APP = await appSchema.findOne({});
-    // }
-
-    // let number = APP.number;
-
-    // let userApp = "live" + number;
-
-    //assigning the data into obj for saving the mongodb
     const newUser = new User({
       name,
       email,
       password: password,
-      domains: domainList,
+      domain,
       color: color,
       isActive: true,
-      addedBy: id, //this is the param that get the logged user
+      addedBy: id, 
       isAdmin,
+      domain,
       addUser,
       deleteUser,
       createChannel,
       deleteChannel,
       expiryDate,
-      channelLimit,
+      channelLimit:limit,
     });
 
-    const decryptedPassword = await decryptPassword(newUser.password);
-
-    //saving the the objected data into mongodb
     newUser.save().then(() => {
-      domainList = {};
-      const newNumber = number + 1;
-      appSchema
-        .findOneAndUpdate(
-          { _id: APP._id },
-          { $set: { number: newNumber } },
-          { new: true }
-        )
-        .then((data) => console.log(data));
-    }).then((data)=>console.log(data)).catch((err)=>console.log(err))
+    }).then().catch((err)=>console.log(err))
 
     newUser.password = password;
     res
@@ -296,23 +243,21 @@ export const users = async (req, res) => {
   try {
     const { id } = req.params;
 
-    console.log("id", id);
-
     let user;
 
     if (!id) {
-      user = await User.find({ superAdmin: true }, { password: 0 }).sort({
+      user = await User.find({ superAdmin: true }).sort({
         createdAt: -1,
       });
       return res.status(201).json({ user });
     }
 
-    user = await User.findById({ _id: id }, { password: 0 }).sort({
+    user = await User.findById({ _id: id }).sort({
       createdAt: -1,
     });
 
     if (!user.superAdmin) {
-      user = await User.findById({ addedBy: id }, { password: 0 }).sort({
+      user = await User.find({ addedBy: id }).sort({
         createdAt: -1,
       });
 
@@ -325,12 +270,13 @@ export const users = async (req, res) => {
       return res.status(201).json({ user });
     }
 
-    user = await User.find({ superAdmin: false }, { password: 0 }).sort({
+    user = await User.find({ superAdmin: false }).sort({
       createdAt: -1,
     });
 
     return res.status(201).json({ user });
   } catch (error) {
+    console.log(error.message);
     res.status(500).json(error.message);
   }
 };
@@ -341,14 +287,12 @@ export const deleteUser = async (req, res) => {
     
     const { id ,userId } = req.params;
 
-    console.log('id',id)
-    console.log('userId',userId)
 
     if (!id) {
       return res.status(401).json({ message: "Not authorized" });
     }
 
-    const admin = User.findById({ _id: id });
+    const admin = await User.findById({ _id: id });
 
     if(!admin.deleteUser){
       return res.status(401).json({message:"Not Authorized to delete"})

@@ -19,8 +19,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    domains: {
-      type: Array,
+    domain: {
+      type: String,
+      default: null,
+      required: true,
     },
     isActive: {
       type: Boolean,
