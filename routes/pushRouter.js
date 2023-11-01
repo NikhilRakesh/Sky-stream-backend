@@ -1,13 +1,14 @@
 import express from "express";
 import { deletePush, getPush, pushStream } from "../controllers/pushController.js";
+import { jwtMiddleware } from "../controllers/auth.js";
 
 const postRouter = express.Router();
 
-postRouter.get('/delete/:channelId?',deletePush);
+postRouter.get('/delete/:channelId?',jwtMiddleware, deletePush);
 
-postRouter.post("/:userId?/:channelId?", pushStream);
+postRouter.post("/:userId?/:channelId?",jwtMiddleware,  pushStream);
 
-postRouter.get("/:channelId?", getPush);
+postRouter.get("/:channelId?",jwtMiddleware,  getPush);
 
 export default postRouter;
 

@@ -1,12 +1,13 @@
 import express from "express";
 import { getLiveNow, getStreamStats, getSystemStats } from "../controllers/statsController.js";
+import { jwtMiddleware } from "../controllers/auth.js";
 
 const StatsRouter = express.Router();
 
 
-StatsRouter.get("/stream", getStreamStats)
-StatsRouter.get("/system", getSystemStats)
-StatsRouter.get("/live-now/:userId", getLiveNow);
+StatsRouter.get("/stream",jwtMiddleware, getStreamStats)
+StatsRouter.get("/system",jwtMiddleware, getSystemStats)
+StatsRouter.get("/live-now/:userId",jwtMiddleware, getLiveNow);
 
 
 export default StatsRouter;

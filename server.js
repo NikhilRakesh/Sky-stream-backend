@@ -120,7 +120,9 @@ async function setupNMS(trans, edge) {
 
   nms.on("prePublish", async (id, StreamPath, args) => {
     const isValidStreamKey = channelArray.includes(StreamPath);
-
+    console.log("isValidStreamKey", isValidStreamKey);
+    console.log("StreamPath", StreamPath);
+    console.log("channelArray", channelArray);
     if (!isValidStreamKey) {
       const session = nms.getSession(id);
       return session.reject();

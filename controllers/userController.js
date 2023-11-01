@@ -118,7 +118,6 @@ export const userLogin = async (req, res) => {
 
     user.password = null;
 
-
     res
       .cookie(String(user._id), token, {
         path: "/",
@@ -157,32 +156,53 @@ export const verifyEmail = async (req, res) => {
   }
 };
 
-export const button = async (req, res) => {
+export const updateUserPermission = async (req, res) => {
   try {
-    const {
-      ...body
-    } = req.body;
-
-    const { id  } = req.params;
-
+    const { id } = req.params;
+    const { ...updateData } = req.body;
 
     if (!id) {
-      return res.status(400).json({ message: "userId not getting",data:req.body });
+      return res
+        .status(400)
+        .json({ message: "User ID is missing", data: req.body });
     }
-    const updatedUser = await User.findByIdAndUpdate(
-      { _id: id },
-      { $set: body },
-      { multi: true }
-    ).then((data) => {
-      console.log(data)
-      res.status(200).json({ message: "Data Updated", data: data });
-    }).catch((err)=>console.log(err.message))
 
+    // Check if the user with the given ID exists
+    const existingUser = await User.findById(id);
+
+    if (!existingUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Update the user's permissions
+    await User.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, multi: true },
+      (err, updatedUser) => {
+        if (err) {
+          console.error(err);
+          return res
+            .status(500)
+            .json({ message: "Update failed", error: err.message });
+        }
+
+        if (!updatedUser) {
+          return res.status(404).json({ message: "User not found" });
+        }
+
+        res
+          .status(200)
+          .json({ message: "User data updated", data: updatedUser });
+      }
+    );
   } catch (err) {
-    console.log(err);
+    console.error(err);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: err.message });
   }
 };
-
 //THIS METHOS IS TO VERIFY THE OTP
 export const verifyOtp = (req, res) => {
   try {
@@ -243,7 +263,6 @@ export const resetPass = async (req, res) => {
 export const users = async (req, res) => {
   try {
     const { id } = req.params;
-
     let user;
 
     if (!id) {
@@ -312,5 +331,28 @@ export const deleteUser = async (req, res) => {
     
     res.status(500).json({ message: "Internal Server error" });
 
+  }
+}
+
+
+export const getUser = async (req, res) => {
+  console.log("get user")
+  try {
+    
+    const id  = req.id
+
+    console.log(id,"------------------------------------------")
+
+    // await User.findById({ _id: id }, "-password")
+    //   .then((data) => {
+    //     return res.status(200).json({ message: "User found", data });
+    //   })
+    //   .catch((err) => console.log(err.message));  
+
+  } catch (error) {
+    
+    console.log(error.message)
+
+    res.status(500).json({ message: "Internal Server error" });
   }
 }

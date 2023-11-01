@@ -3,7 +3,10 @@ import jwt from "jsonwebtoken";
 export const jwtMiddleware = async (req, res, next) => {
   try {
     const cookies = req.headers.cookie;
-    console.log(cookies, "cookies");
+
+    if (!cookies) {
+      return res.status(401).json({ message: "No cookies provided" });
+    }
 
     const token = await cookies.split("=")[1];
 
@@ -14,8 +17,7 @@ export const jwtMiddleware = async (req, res, next) => {
         .json({ message: "Invalid token no" });
     }
 
-
-    const decoded = await jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     if (!decoded) {
       return res
@@ -25,7 +27,6 @@ export const jwtMiddleware = async (req, res, next) => {
     }
 
     req.id = decoded;
-    console.log(decoded, "decoded");
     next();
   } catch (err) {
     console.error(err);
@@ -35,15 +36,9 @@ export const jwtMiddleware = async (req, res, next) => {
   }
 };
 
-
-
 export const refreshToken = async (req, res, next) => {
   try {
     const cookies = req.headers.cookie;
-
-    console.log(req.headers, "cookies");
-
-    console.log(cookies, "cookies");
 
     if (!cookies) {
       return res.status(401).json({ message: "No cookies provided" });
@@ -74,21 +69,22 @@ export const refreshToken = async (req, res, next) => {
           .json({ message: "Invalid token", error: "Failed to refresh token" });
       }
 
-      res.clearCookie(String(decoded.id));
-      res.cookie(String(decoded.id), token, {
-        path: "/",
-        expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
-        httpOnly: true,
-        sameSite: "lax",
-      });
+      res
+        .clearCookie(String(decoded.id)).cookie(String(decoded.id), token, {
+          path: "/",
+          expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
+          httpOnly: true,
+          sameSite: "lax",
+        })
+        .status(200)
+        .json({ message: "Token refreshed successfully" });
 
       req.id = decoded.id;
       next();
     });
 
-    res.status(200).json({ message: "Token refreshed successfully" });
+    
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
