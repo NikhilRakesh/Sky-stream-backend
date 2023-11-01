@@ -2,7 +2,6 @@ import User from "../models/userModel.js";
 import { authenticator } from "otplib";
 import { message, transporter, cb } from "../config/nodemailer.js";
 import jwt from "jsonwebtoken";
-import appSchema from "../models/appModel.js";
 
 let email;
 let newOtp;
@@ -11,7 +10,6 @@ const generateOTP = () => {
   const token = authenticator.generate(secret);
   return token;
 };
-
 
 export const userCreation = async (req, res, next) => {
   try {
@@ -88,6 +86,8 @@ export const userCreation = async (req, res, next) => {
   }
 };
 
+
+
 export const userLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -112,11 +112,12 @@ export const userLogin = async (req, res) => {
         .json({ message: "Unauthorized: Invalid credentials" });
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    const token = await jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRE,
     });
 
     user.password = null;
+
 
     res
       .cookie(String(user._id), token, {
@@ -132,8 +133,8 @@ export const userLogin = async (req, res) => {
   }
 };
 
-//THIS IS FOR RESETING THE PASSWORD
-//FIRST WE WANT TO GET THE EMAIL WHICH IS TO RESET THE PASSWORD
+
+
 export const verifyEmail = async (req, res) => {
   try {
     email = req.body.email; //GETTNG THE EMAIL FROM THE REQ.BODY
