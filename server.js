@@ -136,11 +136,9 @@ async function setupNMS(trans, edge) {
       return session.reject();
     }
 
-    const startTime = getDate();
-
     await Channel.findOneAndUpdate(
       { streamKey: StreamPath },
-      { $set: { status: true, startTime: startTime } },
+      { $set: { status: true, startTime: new Date(Date.now()) } },
       { new: true, multi: true }
     );
 

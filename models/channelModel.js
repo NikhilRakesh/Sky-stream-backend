@@ -26,7 +26,7 @@ const channelSchema = new mongoose.Schema(
       default: false,
     },
     startTime: {
-      type: String,
+      type: Date,
       default: null,
     },
     isActive: {

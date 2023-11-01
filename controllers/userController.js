@@ -35,7 +35,7 @@ export const userCreation = async (req, res, next) => {
     const userData = await User.findById({ _id: id });
 
     if (!userData.addUser) {
-      return res.status(409).json({ error: "Not Authorized" });
+      return res.status(401).json({ error: "Not Authorized" });
     }
 
     const user = await User.findOne({ email: email });
@@ -44,7 +44,6 @@ export const userCreation = async (req, res, next) => {
       return res.status(409).send({ error: "User already exists" });
     }
 
-  
     let isAdmin;
     if (id) {
       const userData = await User.findById({ _id: id });
@@ -62,7 +61,7 @@ export const userCreation = async (req, res, next) => {
       domain,
       color: color,
       isActive: true,
-      addedBy: id, 
+      addedBy: id,
       isAdmin,
       domain,
       addUser,
@@ -70,23 +69,24 @@ export const userCreation = async (req, res, next) => {
       createChannel,
       deleteChannel,
       expiryDate,
-      channelLimit:limit,
+      channelLimit: limit,
     });
 
-    newUser.save().then(() => {
-    }).then().catch((err)=>console.log(err))
+    newUser
+      .save()
+      .then(() => {})
+      .then()
+      .catch((err) => console.log(err));
 
     newUser.password = password;
     res
       .status(201)
       .json({ message: "User created successfully", data: newUser });
   } catch (error) {
-    console.log(error.message)
+    console.log(error.message);
     res.status(500).json({ error: error.message });
   }
 };
-
-
 
 export const userLogin = async (req, res) => {
   try {
@@ -132,27 +132,23 @@ export const userLogin = async (req, res) => {
   }
 };
 
-
-
 export const verifyEmail = async (req, res) => {
   try {
-    email = req.body.email; //GETTNG THE EMAIL FROM THE REQ.BODY
-    //IF THERE NO EMAIL IN THE REQ.BODY THEN IT WILL RETURN THE ERROR MESSAGE
+    email = req.body.email;
     if (!email) {
       return res.status(404).json({ error: "Email is Requireded" });
     }
-    const user = await User.findOne({ email: email }); //GETTING THE USER FROM THE MONGODB WITH THE EMAIL
-    //IF HERE THE USER IS ENTER THE WRONG EMAIL OR NOT IN THE DB THEN SHOW THE ERROR
+    const user = await User.findOne({ email: email });
     if (!user) {
       return res.status(400).json({ error: "Email is not getting" });
     }
 
-    const subject = "OTP From Stream Well"; //GIVING THE SUBJECT FOR EMAIL
-    newOtp = generateOTP(); //GENERATING OTP TO SEND
-    transporter.sendMail(message(email, subject, newOtp), cb); //SEND THE EMAIL IN WITH THE OTP SUBJECT
-    res.status(200).json(email); //THEN RETURN THE EMAIL
+    const subject = "OTP From Stream Well";
+    newOtp = generateOTP();
+    transporter.sendMail(message(email, subject, newOtp), cb);
+    res.status(200).json(email);
   } catch (error) {
-    res.status(500).send(error.message); //IF ERROR CATCH THE ERROR
+    res.status(500).send(error.message);
   }
 };
 
@@ -168,34 +164,21 @@ export const updateUserPermission = async (req, res) => {
     }
 
     // Check if the user with the given ID exists
-    const existingUser = await User.findById(id);
+    const existingUser = await User.findById({ _id: id });
 
     if (!existingUser) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Update the user's permissions
-    await User.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true, multi: true },
-      (err, updatedUser) => {
-        if (err) {
-          console.error(err);
-          return res
-            .status(500)
-            .json({ message: "Update failed", error: err.message });
-        }
-
-        if (!updatedUser) {
-          return res.status(404).json({ message: "User not found" });
-        }
-
-        res
-          .status(200)
-          .json({ message: "User data updated", data: updatedUser });
-      }
-    );
+    await User.findByIdAndUpdate(id, updateData, { new: true, multi: true })
+      .then((data) => {
+        console.log(data);
+        return res.status(201).json(data);
+      })
+      .catch((err) => {
+        console.log(err.message);
+        return res.status(500).json(err.message);
+      });
   } catch (err) {
     console.error(err);
     res
@@ -224,24 +207,18 @@ export const verifyOtp = (req, res) => {
   }
 };
 
-//this methos is using for if the reseting the password
+
 export const resetPass = async (req, res) => {
   try {
     //GETTING THE VALUE FROM REQ.BODY
-    const { password, confirmPassword } = req.body;
+    const { password } = req.body;
     //IF THE PASSWORD IS NOT FOUND THEN IT WILL SEND A ERROR MESSAGE
     if (!password) {
       return res.status(403).json({ error: "Password field can't be empty" });
     }
-
-    //if the confirm password and password is not same then it will return a error message
-    if (password !== confirmPassword) {
-      return res.status(406).json({ error: "Confirm Password doesnot match" });
-    }
-    //CHECKING IF CONFIRMATION PASSWORDS ARE EQUAL OR NOT
-    if (password === confirmPassword) {
+    
       const resetEmail = email;
-      const encryptedPassword = hashPassword(password);
+      const encryptedPassword = password
       //updating the password as well
       await User.findOneAndUpdate(
         { email: resetEmail },
@@ -249,12 +226,11 @@ export const resetPass = async (req, res) => {
         { new: true }
       );
 
-      //these two variable is store all the save thats why we assign the value null after the use
       email = null;
       newOtp = null;
 
       return res.status(201).json({ message: "Successfully reset" });
-    }
+    
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -301,12 +277,9 @@ export const users = async (req, res) => {
   }
 };
 
-
 export const deleteUser = async (req, res) => {
   try {
-    
-    const { id ,userId } = req.params;
-
+    const { id, userId } = req.params;
 
     if (!id) {
       return res.status(401).json({ message: "Not authorized" });
@@ -314,45 +287,39 @@ export const deleteUser = async (req, res) => {
 
     const admin = await User.findById({ _id: id });
 
-    if(!admin.deleteUser){
-      return res.status(401).json({message:"Not Authorized to delete"})
+    if (!admin.deleteUser) {
+      return res.status(401).json({ message: "Not Authorized to delete" });
     }
 
-    if(!userId){
-      return res.status(401).json({message:"User Id not found"})
+    if (!userId) {
+      return res.status(401).json({ message: "User Id not found" });
     }
 
-    await User.findByIdAndDelete({ _id: userId }).then((data) => {
-      res.status(204).json({ message: "No Content" });
-    }).catch((err)=>console.log(err.message))
-
-    
+    await User.findByIdAndDelete({ _id: userId })
+      .then((data) => {
+        res.status(204).json({ message: "No Content" });
+      })
+      .catch((err) => console.log(err.message));
   } catch (error) {
-    
     res.status(500).json({ message: "Internal Server error" });
-
   }
-}
-
+};
 
 export const getUser = async (req, res) => {
-  console.log("get user")
+  console.log("get user");
   try {
-    
-    const id  = req.id
+    const id = req.id;
 
-    console.log(id,"------------------------------------------")
+    console.log(id, "------------------------------------------");
 
     // await User.findById({ _id: id }, "-password")
     //   .then((data) => {
     //     return res.status(200).json({ message: "User found", data });
     //   })
-    //   .catch((err) => console.log(err.message));  
-
+    //   .catch((err) => console.log(err.message));
   } catch (error) {
-    
-    console.log(error.message)
+    console.log(error.message);
 
     res.status(500).json({ message: "Internal Server error" });
   }
-}
+};

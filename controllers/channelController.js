@@ -2,6 +2,7 @@
 import App from "../models/appModel.js";
 import Channel from "../models/channelModel.js";
 import User from "../models/userModel.js";
+import { restartServer } from "../server.js";
 
 
 
@@ -14,7 +15,15 @@ export const createChannel= async (req,res)=>{
      const {name,domain,streamKey}=req.body; 
      const {userId}=req.params;
 
-     console.log('req.body',req.body)
+      if(!userId){
+        return res.status(401).json({message:"user Auth failed"})
+      }
+
+      const isAdmin = await User.findById({_id:userId})
+
+      if(!isAdmin.createChannel){
+        return res.status(401).json({message:"Not Authorized"})
+      }
 
      if(!name||!domain){
          return res.status(401).json({message:"Please provide all fields"})
@@ -57,6 +66,7 @@ export const createChannel= async (req,res)=>{
         return res.status(500).json({error:err.message})
      })
 
+     restartServer()
 
    } catch (error) {
     console.log(error.message)
@@ -112,6 +122,8 @@ export const deleteChannel=async (req,res)=>{
     const channel = await Channel.findByIdAndDelete({_id:channelId})
 
     return res.status(204).json({message:"Channel deleted"})
+
+    restartServer()
 
   } catch (error) {
     return res.status(500).json({message:"Internal Server Error"})

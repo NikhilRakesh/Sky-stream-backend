@@ -1,6 +1,7 @@
 import express from "express";
-import { addMessage, contactUs, deleteMessage, getMessage } from "../controllers/messageController.js";
+import { addMessage, contactUs, getMessage } from "../controllers/messageController.js";
 import { jwtMiddleware } from "../controllers/auth.js";
+import { deleteMessage } from "../controllers/messageController.js";
 
 const messageRoute = express();
 
