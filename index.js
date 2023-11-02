@@ -31,7 +31,9 @@ app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 app.use(
   cors({
     credentials: true,
-    origin: ["http://localhost:5173", "http://192.168.29.169:51173"],
+    origin: [
+      "http://app.skystream.in",
+    ],
   })
 );
 
