@@ -1,7 +1,9 @@
 //creating the channel
+import App from "../models/appModel.js";
 import Channel from "../models/channelModel.js";
 import User from "../models/userModel.js";
-import { findChannel } from "../server.js";
+import { restartServer } from "../server.js";
+
 
 
 
@@ -9,22 +11,41 @@ import { findChannel } from "../server.js";
 
 export const createChannel= async (req,res)=>{
    try {
-      // Get userId from Global state
+
      const {name,domain,streamKey}=req.body; 
      const {userId}=req.params;
-    
-     const exist = await Channel.findOne({name:name})
-     
+
+      if(!userId){
+        return res.status(401).json({message:"user Auth failed"})
+      }
+
+      const isAdmin = await User.findById({_id:userId})
+
+      if(!isAdmin.createChannel){
+        return res.status(401).json({message:"Not Authorized"})
+      }
+
      if(!name||!domain){
          return res.status(401).json({message:"Please provide all fields"})
      }
     
-   if(exist)
-   {
-      return res.status(401).json({message:"Channel already exits!"})
-   }
+ 
+    let APP = await App.findOne({});
 
-     const key ="/live/"+streamKey;
+    if (!APP || APP.length <= 0) {
+      const app = new App({
+        name: "live",
+        number: 1,
+      });
+      await app.save();
+      APP = await App.findOne({});
+    }
+
+    let number = APP.number;
+
+    let userApp = "live" + number;
+
+     const key ='/'+userApp+'/'+streamKey;
      const newChannel=new Channel({
       userId,
         name:name,
@@ -33,14 +54,78 @@ export const createChannel= async (req,res)=>{
      });
      
      newChannel.save().then((data)=>{
-       findChannel();
+      const newNumber = number + 1;
+      App.findOneAndUpdate(
+        { _id: APP._id },
+        { $set: { number: newNumber } },
+        { new: true }
+      ).then((data) => console.log(data));
         return res.status(201).json(data)
      }).catch(err=>{
+      console.log(err.message)
         return res.status(500).json({error:err.message})
      })
+
+     restartServer()
+
    } catch (error) {
+    console.log(error.message)
     return res.status(500).json({message:"Internal Server Error"})
    }
 }
 
 
+export const getChannel=async (req,res)=>{
+  try {
+    
+    const {userId}=req.params;
+
+    if(!userId){
+      return res.status(401).json({message:"user Auth failed"})
+    }
+
+    const user = await User.findById({_id:userId})
+
+    
+    if(user.superAdmin){
+      
+      const channel = await Channel.find({})
+
+      return res.status(201).json({data:channel})
+
+    }
+    
+    const channels=await Channel.find({userId:userId});
+
+    console.log(channels);
+
+    return res.status(201).json({data:channels})
+
+
+  } catch (error) {
+    
+    return res.status(500).json({message:"Internal Server Error"})
+
+  }
+}
+
+
+
+export const deleteChannel=async (req,res)=>{
+  try {
+    const {channelId}=req.params;
+
+    if(!channelId){
+      return res.status(401).json({message:"Channel Id not found"})
+    }
+
+    const channel = await Channel.findByIdAndDelete({_id:channelId})
+
+    return res.status(204).json({message:"Channel deleted"})
+
+    restartServer()
+
+  } catch (error) {
+    return res.status(500).json({message:"Internal Server Error"})
+  }
+}

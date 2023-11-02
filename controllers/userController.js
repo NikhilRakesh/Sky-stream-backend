@@ -1,72 +1,52 @@
 import User from "../models/userModel.js";
-import CryptoJS from "crypto-js";
 import { authenticator } from "otplib";
 import { message, transporter, cb } from "../config/nodemailer.js";
 import jwt from "jsonwebtoken";
 
-//THE EMAIL & newOtp IS CREATED FOR RESETING THE PASSWORD ITS GLOBAL VARIABLE
 let email;
-let newOtp; //DONE after the use the variable want to null
-
-//THIS METHOD IS USING FOR GENERATION THE OTP
+let newOtp;
 const generateOTP = () => {
   const secret = authenticator.generateSecret();
   const token = authenticator.generate(secret);
   return token;
 };
-            
-//THIS METHOD IS USING FOR GENERATE A ENCRYPTED PASSWORD
-const hashPassword = async (pass) => {
-  return CryptoJS.AES.encrypt(pass, process.env.SECRET_KEY).toString();
-};
-
-//THIS METHOD IS USING FOR DECRYPT THE PASSWORD
-const decryptPassword = async (pass) => {
-  const bytes = CryptoJS.AES.decrypt(pass, process.env.SECRET_KEY);
-  return bytes.toString(CryptoJS.enc.Utf8);
-};
 
 export const userCreation = async (req, res, next) => {
   try {
-    // destructure values from req.body
-    const { email, password, domain, color, limit } = req.body;
-    const { userID } = req.params; // This is for using the logged user id
+    const {
+      name,
+      email,
+      password,
+      domain,
+      color,
+      limit,
+      addUser,
+      deleteChannel,
+      createChannel,
+      deleteUser,
+      expiryDate,
+    } = req.body;
+    const { id } = req.params;
 
-    //email & password want to required
-    if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Email and password are required." });
+    if (!id) {
+      return res.status(400).json({ message: "Authorized user not found" });
     }
 
-    //checking the email id is existing or not
+    const userData = await User.findById({ _id: id });
+
+    if (!userData.addUser) {
+      return res.status(401).json({ error: "Not Authorized" });
+    }
+
     const user = await User.findOne({ email: email });
+
     if (user) {
       return res.status(409).send({ error: "User already exists" });
     }
 
-    //maping the name and index
-    let domainList;
-    if (typeof domain !== "string") {
-      domainList = domain.map((name, index) => ({
-        name,
-        limit: limit[index],
-      }));
-    } else {
-      domainList = {
-        name: domain,
-        limit,
-      };
-    }
-
-    //encrpting the password
-    const encryptedPassword = await hashPassword(password);
-
-    // to find the creating user is superAdmin or Not
     let isAdmin;
-    if (userID) {
-      const userData = await User.findById({ _id: userID });
-
+    if (id) {
+      const userData = await User.findById({ _id: id });
       if (userData.superAdmin == true) {
         isAdmin = true;
       } else {
@@ -74,148 +54,138 @@ export const userCreation = async (req, res, next) => {
       }
     }
 
-    //assigning the data into obj for saving the mongodb
     const newUser = new User({
+      name,
       email,
-      password: encryptedPassword,
-      domains: domainList,
-      color: color, //DONE Destrature body color -done
+      password: password,
+      domain,
+      color: color,
       isActive: true,
-      addedBy: userID, //this is the param that get the logged user
+      addedBy: id,
       isAdmin,
+      domain,
+      addUser,
+      deleteUser,
+      createChannel,
+      deleteChannel,
+      expiryDate,
+      channelLimit: limit,
     });
 
-    // Decrypting the password for response -its testing
-    const decryptedPassword = await decryptPassword(newUser.password);
+    newUser
+      .save()
+      .then(() => {})
+      .then()
+      .catch((err) => console.log(err));
 
-    //creating the jwt token
-    const token = jwt.sign({ _id: newUser._id }, process.env.JWT_SECRET, {
-      expiresIn: "2h",
-    });
-
-    //assigning the token into newUser
-    newUser.token = token;
-
-    //saving the the objected data into mongodb
-    newUser.save().then(() => {
-      domainList = {};
-    });
-
-    newUser.password = decryptedPassword; //in the frontend the password wnt to show tha's why the password decrypting
-    res.status(201).json(newUser); //sending to the fr
+    newUser.password = password;
+    res
+      .status(201)
+      .json({ message: "User created successfully", data: newUser });
   } catch (error) {
-    res.status(500).json({ error: error.message }); //IF THE CODE HAVE ERROR THE CATCH WILL HANDLE WITHOUT BLOCKING
+    console.log(error.message);
+    res.status(500).json({ error: error.message });
   }
 };
 
 export const userLogin = async (req, res) => {
   try {
-    const { email, password } = req.body; //GETTING THE VALUE FROM REQ.BODY
+    const { email, password } = req.body;
 
-    //CHECKING THE EMAIL OR PASSWORD IS NULL THEN IT WILL SEND A MESSAGE
     if (!email || !password) {
       return res
         .status(400)
         .json({ message: "Bad Request: Email and password are required" });
     }
 
-    //GETTING THE USERS FROM THE MONGO EMAIL WITH THE EMAIL ID
     const user = await User.findOne({ email: email });
 
-    //IF THERE IS NOT USER THEN IT WILL SHOW THE MESSAGE
     if (!user) {
       return res
         .status(401)
         .json({ message: "Unauthorized: Invalid credentials" });
     }
 
-    // Decrypt the stored hashed password
-    const decryptedStoredPassword = await decryptPassword(user.password);
-
-    // DONE :Refactor the below  -done
-
-    //CHECKING THE PASSWORD IS CORECT OR NOT FOR LOGIN
-    if (password === decryptedStoredPassword) {
-      return res.status(200).json({ message: "Login successful", user }); //DONE usedate is not found in response  -Done
-    }
-
-    //IF THE PASSWORD IS NOT SAME THEN IT WILL RETUN THE IN VALID MESSAGE
-    if (password !== decryptedStoredPassword) {
+    if (password !== user.password) {
       return res
         .status(401)
         .json({ message: "Unauthorized: Invalid credentials" });
     }
+
+    const token = await jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRE,
+    });
+
+    user.password = null;
+
+    res
+      .cookie(String(user._id), token, {
+        path: "/",
+        expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
+        httpOnly: true,
+        sameSite: "lax",
+      })
+      .status(200)
+      .json({ message: "Login successful", data: user });
   } catch (error) {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
-//THIS IS FOR RESETING THE PASSWORD
-//FIRST WE WANT TO GET THE EMAIL WHICH IS TO RESET THE PASSWORD
 export const verifyEmail = async (req, res) => {
   try {
-    email = req.body.email; //GETTNG THE EMAIL FROM THE REQ.BODY
-    //IF THERE NO EMAIL IN THE REQ.BODY THEN IT WILL RETURN THE ERROR MESSAGE
+    email = req.body.email;
     if (!email) {
       return res.status(404).json({ error: "Email is Requireded" });
     }
-    const user = await User.findOne({ email: email }); //GETTING THE USER FROM THE MONGODB WITH THE EMAIL
-    //IF HERE THE USER IS ENTER THE WRONG EMAIL OR NOT IN THE DB THEN SHOW THE ERROR
+    const user = await User.findOne({ email: email });
     if (!user) {
       return res.status(400).json({ error: "Email is not getting" });
     }
 
-    const subject = "OTP From Stream Well"; //GIVING THE SUBJECT FOR EMAIL
-    newOtp = generateOTP(); //GENERATING OTP TO SEND
-    transporter.sendMail(message(email, subject, newOtp), cb); //SEND THE EMAIL IN WITH THE OTP SUBJECT
-    res.status(200).json(email); //THEN RETURN THE EMAIL
+    const subject = "OTP From Stream Well";
+    newOtp = generateOTP();
+    transporter.sendMail(message(email, subject, newOtp), cb);
+    res.status(200).json(email);
   } catch (error) {
-    res.status(500).send(error.message); //IF ERROR CATCH THE ERROR
+    res.status(500).send(error.message);
   }
 };
 
-export const button = async (req, res) => {
+export const updateUserPermission = async (req, res) => {
   try {
-    const userId = req.body.id; // pass userid from the frontend
-    if (!userId) {
-      return res.status(400).json({ message: "userId not getting" });
-    }
-    let obj = {
-      addUser: false,
-      deleteUser: false,
-      chanelLimit: false,
-      createChanel: false,
-      deleteChanel: false,
-    };
+    const { id } = req.params;
+    const { ...updateData } = req.body;
 
-    if (req.body.addUser === "ON") {
-      obj.addUser = true;
-    }
-    if (req.body.deleteUser === "ON") {
-      obj.deleteUser = true;
-    }
-    if (req.body.chanelLimit === "ON") {
-      obj.chanelLimit = true;
-    }
-    if (req.body.createChanel === "ON") {
-      obj.createChanel = true;
-    }
-    if (req.body.deleteChanel === "ON") {
-      obj.createChanel = true;
+    if (!id) {
+      return res
+        .status(400)
+        .json({ message: "User ID is missing", data: req.body });
     }
 
-    await User.findByIdAndUpdate(
-      { _id: userId },
-      { $set: obj },
-      { multi: true }
-    );
+    // Check if the user with the given ID exists
+    const existingUser = await User.findById({ _id: id });
 
-    return res.status(200).json({ message: "Data Updated" });
+    if (!existingUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    await User.findByIdAndUpdate(id, updateData, { new: true, multi: true })
+      .then((data) => {
+        console.log(data);
+        return res.status(201).json(data);
+      })
+      .catch((err) => {
+        console.log(err.message);
+        return res.status(500).json(err.message);
+      });
   } catch (err) {
-    console.log(err);
+    console.error(err);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: err.message });
   }
 };
-
 //THIS METHOS IS TO VERIFY THE OTP
 export const verifyOtp = (req, res) => {
   try {
@@ -237,25 +207,18 @@ export const verifyOtp = (req, res) => {
   }
 };
 
-//this methos is using for if the reseting the password
+
 export const resetPass = async (req, res) => {
   try {
     //GETTING THE VALUE FROM REQ.BODY
-    const { password, confirmPassword } = req.body;
+    const { password } = req.body;
     //IF THE PASSWORD IS NOT FOUND THEN IT WILL SEND A ERROR MESSAGE
     if (!password) {
       return res.status(403).json({ error: "Password field can't be empty" });
     }
-    //DONE DESTRUCTURE  -done
-
-    //if the confirm password and password is not same then it will return a error message
-    if (password !== confirmPassword) {
-      return res.status(406).json({ error: "Confirm Password doesnot match" });
-    }
-    //CHECKING IF CONFIRMATION PASSWORDS ARE EQUAL OR NOT
-    if (password === confirmPassword) {
+    
       const resetEmail = email;
-      const encryptedPassword = hashPassword(password);
+      const encryptedPassword = password
       //updating the password as well
       await User.findOneAndUpdate(
         { email: resetEmail },
@@ -263,12 +226,11 @@ export const resetPass = async (req, res) => {
         { new: true }
       );
 
-      //these two variable is store all the save thats why we assign the value null after the use
       email = null;
       newOtp = null;
 
       return res.status(201).json({ message: "Successfully reset" });
-    }
+    
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -276,29 +238,88 @@ export const resetPass = async (req, res) => {
 
 export const users = async (req, res) => {
   try {
-    const { id } = req.params; //IF THE ID IS GETTING FROM THE PARAMS THEN IT WILL SAVE ON THE VARIABLE ID
+    const { id } = req.params;
+    let user;
 
-    //CHECKING THE CONDITION IF THERE IS NO ID THEN I WILL SHOW ALL THE USER DETAILS
     if (!id) {
-      const user = await User.find({ superAdmin: false });
+      user = await User.find({ superAdmin: true }).sort({
+        createdAt: -1,
+      });
       return res.status(201).json({ user });
     }
 
-    //CHECKING THECONDITION IF THE ID THEN IT WILL RETURN THE MATCHED FROM FROM THE USER LIST
-    if (id) {
-      const user = await User.findById(id); //GET THE USERES FROM THE MONGODB
+    user = await User.findById({ _id: id }).sort({
+      createdAt: -1,
+    });
 
-      //CHECKING THE CONDITION IF THE USER IS NOT THERE IN THE MONGODB
+    if (!user.superAdmin) {
+      user = await User.find({ addedBy: id }).sort({
+        createdAt: -1,
+      });
+
       if (!user) {
         return res
           .status(401)
           .json({ error: `No such a user by this id ${id}` });
       }
 
-      // RETURNING IF THE USER IS THERE
       return res.status(201).json({ user });
     }
+
+    user = await User.find({ superAdmin: false }).sort({
+      createdAt: -1,
+    });
+
+    return res.status(201).json({ user });
   } catch (error) {
-    res.status(500).json(error.message); //HANDLING THE ERROR IF THESE CODE NOT WORKING THEN IT WILL RETURN THE CATCH MATHOD AND HANDLE THE ERROR
+    console.log(error.message);
+    res.status(500).json(error.message);
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    const { id, userId } = req.params;
+
+    if (!id) {
+      return res.status(401).json({ message: "Not authorized" });
+    }
+
+    const admin = await User.findById({ _id: id });
+
+    if (!admin.deleteUser) {
+      return res.status(401).json({ message: "Not Authorized to delete" });
+    }
+
+    if (!userId) {
+      return res.status(401).json({ message: "User Id not found" });
+    }
+
+    await User.findByIdAndDelete({ _id: userId })
+      .then((data) => {
+        res.status(204).json({ message: "No Content" });
+      })
+      .catch((err) => console.log(err.message));
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server error" });
+  }
+};
+
+export const getUser = async (req, res) => {
+  console.log("get user");
+  try {
+    const id = req.id;
+
+    console.log(id, "------------------------------------------");
+
+    // await User.findById({ _id: id }, "-password")
+    //   .then((data) => {
+    //     return res.status(200).json({ message: "User found", data });
+    //   })
+    //   .catch((err) => console.log(err.message));
+  } catch (error) {
+    console.log(error.message);
+
+    res.status(500).json({ message: "Internal Server error" });
   }
 };

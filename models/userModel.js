@@ -2,6 +2,14 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
+    name: {
+      type: String,
+      required: true,
+    },
+    status: {
+      type: Boolean,
+      default: false,
+    },
     email: {
       type: String,
       required: true,
@@ -11,16 +19,18 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    domains: {
-      type: Array,
+    domain: {
+      type: String,
+      default: null,
+      required: true,
     },
     isActive: {
       type: Boolean,
       default: true,
     },
-    superAdmin:{
-        type :Boolean ,
-        default : false
+    superAdmin: {
+      type: Boolean,
+      default: false,
     },
     isAdmin: {
       type: Boolean,
@@ -38,6 +48,9 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    addedBy: {
+      type: mongoose.Schema.ObjectId,
+    },
     addUser: {
       type: Boolean,
       default: false,
@@ -46,17 +59,39 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    chanelLimit: {
+    channelLimit: {
+      type: Number,
+      default: 0,
+    },
+    createChannel: {
       type: Boolean,
       default: false,
     },
-    createChanel: {
+    deleteChannel: {
       type: Boolean,
       default: false,
     },
-    deleteChanel: {
-      type: Boolean,
-      default: false,
+    message: {
+      block: {
+        type: Boolean,
+        default: false,
+      },
+      data: {
+        type: String,
+        default: null,
+      },
+      subject:{
+        type:String,
+        default:null
+      }
+    },
+    app: {
+      type: String,
+      default: null,
+    },
+    expiryDate: {
+      type: Date,
+      default: null,
     },
   },
   { timestamps: true }

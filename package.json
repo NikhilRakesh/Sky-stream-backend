@@ -20,15 +20,20 @@
     "dotenv": "^16.3.1",
     "esm": "^3.2.25",
     "express": "^4.18.2",
+    "fluent-ffmpeg": "^2.1.2",
     "helmet": "^7.0.0",
     "jsonwebtoken": "^9.0.2",
+    "lodash": "^4.17.21",
+    "Logger": "^0.0.0",
     "mocha": "^10.2.0",
     "mongoose": "^7.5.1",
     "morgan": "^1.10.0",
+    "node-fetch": "^3.3.2",
     "node-media-server": "^2.6.2",
     "nodemailer": "^6.9.5",
     "os": "^0.1.2",
-    "otplib": "^12.0.1"
+    "otplib": "^12.0.1",
+    "ws": "^8.14.2"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"

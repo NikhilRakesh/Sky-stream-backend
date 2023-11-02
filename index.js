@@ -8,10 +8,14 @@ import helmet from 'helmet';
 import cors from 'cors';
 import os from 'os';
 import "./server.js";
-
 dotenv.config();
 import mongoose from "./config/dbConfig.js";
 import cluster from "cluster";
+import StatsRouter from "./routes/statsRoute.js";
+import messageRoute from "./routes/messageRouter.js";
+import postRouter from "./routes/pushRouter.js";
+import domainRouter from "./routes/domainRouter.js";
+import authRouter from "./routes/authRouter.js";
 
 
 const PORT=process.env.PORT||5000;
@@ -21,13 +25,24 @@ const app=express();
 app.use(express.json());
 app.use(helmet())
 app.use(helmet.crossOriginResourcePolicy({policy:'cross-origin'}))
-app.use(morgan("common"));
+app.use(morgan("dev"));
 app.use(bodyParser.json({ limit: "30mb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
-app.use(cors())
+app.use(
+  cors({
+    credentials: true,
+    origin: ["http://skystream.in", "https://skystream.in/"],
+  })
+);
 
+// Routes
 app.use("/api/users",userRouter);
 app.use('/api/channel',channelRouter);
+app.use("/api/stats", StatsRouter);
+app.use('/api/message',messageRoute);
+app.use('/api/push',postRouter)
+app.use('/api/domain',domainRouter)
+app.use('/api/auth',authRouter)
 
 
 
