@@ -170,7 +170,7 @@ async function setupNMS(trans, edge) {
 }
 
 async function startServer() {
-  await findChannel();
+  await findChannel()
   const { trans, edge } = await loadConfigStart();
    nms = await setupNMS(trans, edge);
 }
