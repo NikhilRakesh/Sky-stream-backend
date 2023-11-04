@@ -17,7 +17,8 @@ export const jwtMiddleware = async (req, res, next) => {
         .json({ message: "Invalid token no" });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded =  jwt.verify(token, process.env.JWT_SECRET);
+
 
     if (!decoded) {
       return res
@@ -26,7 +27,7 @@ export const jwtMiddleware = async (req, res, next) => {
         .json({ message: "Invalid token" });
     }
 
-    req.id = decoded;
+   
     next();
   } catch (err) {
     console.error(err);
@@ -53,24 +54,24 @@ export const refreshToken = async (req, res, next) => {
     jwt.verify(prevToken, process.env.JWT_SECRET, (err, decoded) => {
       if (err) {
         return res
-          .clearCookie(String(decoded.id))
+          .clearCookie(String('cookie'))
           .status(403)
           .json({ message: "Invalid token", error: err.message });
       }
 
-      const token = jwt.sign({ id: decoded.id }, process.env.JWT_SECRET, {
+      const token = jwt.sign({ id: 'cookie' }, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRE,
       });
 
       if (!token) {
         return res
-          .clearCookie(String(decoded.id))
+          .clearCookie(String('cookie'))
           .status(403)
           .json({ message: "Invalid token", error: "Failed to refresh token" });
       }
 
       res
-        .clearCookie(String(decoded.id)).cookie(String(decoded.id), token, {
+        .clearCookie(String('cookie')).cookie(String('cookie'), token, {
           path: "/",
           expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
           httpOnly: true,
@@ -79,7 +80,7 @@ export const refreshToken = async (req, res, next) => {
         .status(200)
         .json({ message: "Token refreshed successfully" });
 
-      req.id = decoded.id;
+      
       next();
     });
 

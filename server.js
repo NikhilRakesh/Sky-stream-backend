@@ -3,21 +3,23 @@ import nmsConfig from "./config/mediaServer.js";
 import Channel from "./models/channelModel.js";
 import App from "./models/appModel.js";
 import User from "./models/userModel.js";
-import { getDate } from "./config/getDate.js";
 import Eadge from "./models/eadgeModel.js";
-const channelArray = [];
+let channelArray = [];
 let nms
 
 
 
-async function findChannel() {
+const findChannel = async () => {
   try {
-    const channel = await Channel.find();
-    channelArray.push(...channel.map((data) => data.streamKey));
+    const channels = await Channel.find();
+    const streamKeys = channels.map((data) => data.streamKey);
+    channelArray = [...streamKeys];
+  
   } catch (err) {
     console.error(err);
   }
-}
+};
+
 
 async function loadConfig() {
   const tasks = await App.findOne({});
@@ -89,10 +91,10 @@ async function setupNMS(trans, edge) {
   const nms = new NodeMediaServer({
     rtmp: {
       port: 1935,
-      chunk_size: 60000,
+      chunk_size: 40000,
       gop_cache: true,
-      ping: 30,
-      ping_timeout: 60,
+      ping: 60,
+      ping_timeout: 80,
     },
     http: {
       port: 8000,
@@ -114,15 +116,17 @@ async function setupNMS(trans, edge) {
       ffmpeg: "/usr/bin/ffmpeg",
       tasks: edge,
     },
+    auth: {
+      api: true,
+      api_user: "codenuity",
+      api_pass: "codenuity",
+    },
   });
 
   nms.run();
 
   nms.on("prePublish", async (id, StreamPath, args) => {
     const isValidStreamKey = channelArray.includes(StreamPath);
-    console.log("isValidStreamKey", isValidStreamKey);
-    console.log("StreamPath", StreamPath);
-    console.log("channelArray", channelArray);
     if (!isValidStreamKey) {
       const session = nms.getSession(id);
       return session.reject();
@@ -170,11 +174,12 @@ async function setupNMS(trans, edge) {
 }
 
 async function startServer() {
-  await findChannel()
-  const { trans, edge } = await loadConfigStart();
-   nms = await setupNMS(trans, edge);
+  await findChannel();
+  setTimeout(async()=>{
+    const { trans, edge } = await loadConfigStart();
+    nms = await setupNMS(trans, edge);
+  },1500)
 }
-
 
 
 export async function restartServer() {

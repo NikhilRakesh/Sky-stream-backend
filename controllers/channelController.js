@@ -14,6 +14,7 @@ export const createChannel= async (req,res)=>{
 
      const {name,domain,streamKey}=req.body; 
      const {userId}=req.params;
+     
 
       if(!userId){
         return res.status(401).json({message:"user Auth failed"})
@@ -53,7 +54,7 @@ export const createChannel= async (req,res)=>{
         streamKey:key
      });
      
-     newChannel.save().then((data)=>{
+    await newChannel.save().then((data)=>{
       const newNumber = number + 1;
       App.findOneAndUpdate(
         { _id: APP._id },

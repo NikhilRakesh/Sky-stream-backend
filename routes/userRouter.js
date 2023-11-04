@@ -7,7 +7,6 @@ import {
     resetPass,
     users,
     deleteUser,
-    getUser,
     updateUserPermission,
     
 } from "../controllers/userController.js"
@@ -23,7 +22,7 @@ userRouter.post("/verify-otp",verifyOtp);
 userRouter.post("/reset-password",resetPass);
 userRouter.post("/user-permission/:id?", jwtMiddleware, updateUserPermission);  
 userRouter.get("/delete/:id?/:userId?", jwtMiddleware,deleteUser);
-userRouter.get('/user-data',jwtMiddleware,getUser);    
+
 
 
 // TODO Expiry Date update meathode
