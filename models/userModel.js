@@ -93,6 +93,10 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    pushLive:{
+      type:Boolean,
+      default:false
+    }
   },
   { timestamps: true }
 );

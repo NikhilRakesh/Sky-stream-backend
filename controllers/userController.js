@@ -111,15 +111,16 @@ export const userLogin = async (req, res) => {
         .status(401)
         .json({ message: "Unauthorized: Invalid credentials" });
     }
-
-    const token = await jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+   
+    const token = await jwt.sign({ id: 'cookie' }, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRE,
-    });
+    })
+
 
     user.password = null;
 
     res
-      .cookie(String(user._id), token, {
+      .cookie(String('cookie'), token, {
         path: "/",
         expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
         httpOnly: true,
@@ -272,7 +273,6 @@ export const users = async (req, res) => {
 
     return res.status(201).json({ user });
   } catch (error) {
-    console.log(error.message);
     res.status(500).json(error.message);
   }
 };
@@ -305,21 +305,3 @@ export const deleteUser = async (req, res) => {
   }
 };
 
-export const getUser = async (req, res) => {
-  console.log("get user");
-  try {
-    const id = req.id;
-
-    console.log(id, "------------------------------------------");
-
-    // await User.findById({ _id: id }, "-password")
-    //   .then((data) => {
-    //     return res.status(200).json({ message: "User found", data });
-    //   })
-    //   .catch((err) => console.log(err.message));
-  } catch (error) {
-    console.log(error.message);
-
-    res.status(500).json({ message: "Internal Server error" });
-  }
-};
