@@ -5,21 +5,17 @@ import App from "./models/appModel.js";
 import User from "./models/userModel.js";
 import Eadge from "./models/eadgeModel.js";
 let channelArray = [];
-let nms
-
-
+let nms;
 
 const findChannel = async () => {
   try {
     const channels = await Channel.find();
     const streamKeys = channels.map((data) => data.streamKey);
     channelArray = [...streamKeys];
-  
   } catch (err) {
     console.error(err);
   }
 };
-
 
 async function loadConfig() {
   const tasks = await App.findOne({});
@@ -36,27 +32,27 @@ async function loadConfig() {
         mp4: true,
         mp4Flags: "[movflags=frag_keyframe+empty_moov]",
       },
-    ];
+    ]; 
   }
 
   const transTasksArray = [];
   const number = tasks.number;
   const name = tasks.name;
-
   for (let i = 1; i <= number; i++) {
-    transTasksArray.push({
-      app: name + i,
-      hls: true,
-      hlsFlags: "[hls_time=2:hls_list_size=3:hls_flags=delete_segments]",
-      hlsKeep: true,
-      dash: true,
-      dashFlags: "[f=dash:window_size=3:extra_window_size=5]",
-      dashKeep: true,
-      mp4: true,
-      mp4Flags: "[movflags=frag_keyframe+empty_moov]",
-    });
+    if (!tasks.deletedNumber.includes(i)) {
+      transTasksArray.push({
+        app: name + i,
+        hls: true,
+        hlsFlags: "[hls_time=2:hls_list_size=3:hls_flags=delete_segments]",
+        hlsKeep: true,
+        dash: true,
+        dashFlags: "[f=dash:window_size=3:extra_window_size=5]",
+        dashKeep: true,
+        mp4: true,
+        mp4Flags: "[movflags=frag_keyframe+empty_moov]",
+      });
+    }
   }
-
   return transTasksArray;
 }
 
@@ -175,16 +171,15 @@ async function setupNMS(trans, edge) {
 
 async function startServer() {
   await findChannel();
-  setTimeout(async()=>{
+  setTimeout(async () => {
     const { trans, edge } = await loadConfigStart();
     nms = await setupNMS(trans, edge);
-  },1500)
+  }, 1500);
 }
 
-
 export async function restartServer() {
-    nms.stop()
-    startServer()
+  nms.stop();
+  startServer();
 }
 
 export default startServer();

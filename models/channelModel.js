@@ -33,6 +33,9 @@ const channelSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    number:{
+      type: Number,
+    }
   },
   {
     timestamps: true,

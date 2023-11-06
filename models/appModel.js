@@ -1,16 +1,22 @@
 import mongoose from "mongoose";
 
 
-const appSchema = new mongoose.Schema({
+const appSchema = new mongoose.Schema(
+  {
     name: {
-        type: String,
-        required: true,
+      type: String,
+      required: true,
     },
     number: {
-        type: Number,
-        required: true,
+      type: Number,
+      required: true,
     },
-},{timestamps:true});
+    deletedNumber: {
+      type: Array,
+    },
+  },
+  { timestamps: true }
+);
 
 
 const App = mongoose.model("APP", appSchema);

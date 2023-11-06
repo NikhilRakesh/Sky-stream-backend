@@ -1,7 +1,6 @@
 import fetch from "node-fetch";
 import User from "../models/userModel.js";
 import Channel from "../models/channelModel.js";
-import { users } from "./userController.js";
 
 const username = "codenuity";
 const password = "codenuity";
@@ -81,10 +80,12 @@ export const getLiveNow = async (req, res) => {
       res.status(200).json({ data: liveNowChannel });
     }
 
-    const liveNowChannel = await Channel.find({userId:user._id, status: true });
+    const liveNowChannel = await Channel.find({
+      userId: user._id,
+      status: true,
+    });
 
     res.status(200).json({ data: liveNowChannel });
-    
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -105,7 +106,7 @@ export const getSingleLiveNow = async (req, res) => {
     });
 
     if (!response.ok) {
-      res.status (400).json({ message: "No data found" });
+      res.status(400).json({ message: "No data found" });
     }
 
     const data = await response.json();
