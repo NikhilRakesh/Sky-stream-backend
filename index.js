@@ -23,6 +23,7 @@ const PORT=process.env.PORT||5000;
 const app=express();
 
 app.use(express.json());
+
 app.use(helmet())
 app.use(helmet.crossOriginResourcePolicy({policy:'cross-origin'}))
 app.use(morgan("dev"));
@@ -31,9 +32,16 @@ app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 app.use(
   cors({
     credentials: true,
-    origin: ["http://skystream.in","http://localhost:5173", "https://skystream.in/"],
+    origin: [
+      "http://skystream.in",
+      "http://localhost:5173",
+      "https://skystream.in/",
+      "http://192.168.29.169:5173/",
+    ],
   })
 );
+
+
 
 // Routes
 app.use("/api/users",userRouter);
@@ -47,19 +55,13 @@ app.use('/api/auth',authRouter)
 
 
 // Test server configuration
-app.get('/', (req, res) => {
+app.get('/', (req, res) => { 
 
     res.sendStatus(200);
   });
 
 
-
-//[ ] MULTITHREADING CONFIGURATION
-
-const numCpu = os.cpus().length - 2 //[ ] Taking the number of threds available
-
-
-// HACK CHANGE THE SERVER_TYPE TO 'production' FOR RUNNING IN MULTIPLE THREADS 
+const numCpu = os.cpus().length - 2 
 
 if (process.env.SERVER_TYPE === "production") {
   if (cluster.isPrimary) {

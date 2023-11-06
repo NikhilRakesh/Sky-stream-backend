@@ -83,7 +83,6 @@ export const userCreation = async (req, res, next) => {
       .status(201)
       .json({ message: "User created successfully", data: newUser });
   } catch (error) {
-    console.log(error.message);
     res.status(500).json({ error: error.message });
   }
 };
@@ -111,24 +110,16 @@ export const userLogin = async (req, res) => {
         .status(401)
         .json({ message: "Unauthorized: Invalid credentials" });
     }
-   
-    const token = await jwt.sign({ id: 'cookie' }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRE,
-    })
 
+    const token = jwt.sign({ id: "cookie" }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRE,
+    });
 
     user.password = null;
 
-    res
-      .cookie(String('cookie'), token, {
-        path: "/",
-        expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
-        httpOnly: true,
-        sameSite: "lax",
-      })
-      .status(200)
-      .json({ message: "Login successful", data: user });
+    res.status(200).json({ message: "Login successful", data: user });
   } catch (error) {
+    console.log(error.message);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -208,7 +199,6 @@ export const verifyOtp = (req, res) => {
   }
 };
 
-
 export const resetPass = async (req, res) => {
   try {
     //GETTING THE VALUE FROM REQ.BODY
@@ -217,21 +207,20 @@ export const resetPass = async (req, res) => {
     if (!password) {
       return res.status(403).json({ error: "Password field can't be empty" });
     }
-    
-      const resetEmail = email;
-      const encryptedPassword = password
-      //updating the password as well
-      await User.findOneAndUpdate(
-        { email: resetEmail },
-        { $set: { password: encryptedPassword } },
-        { new: true }
-      );
 
-      email = null;
-      newOtp = null;
+    const resetEmail = email;
+    const encryptedPassword = password;
+    //updating the password as well
+    await User.findOneAndUpdate(
+      { email: resetEmail },
+      { $set: { password: encryptedPassword } },
+      { new: true }
+    );
 
-      return res.status(201).json({ message: "Successfully reset" });
-    
+    email = null;
+    newOtp = null;
+
+    return res.status(201).json({ message: "Successfully reset" });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -246,15 +235,8 @@ export const users = async (req, res) => {
       user = await User.find({ superAdmin: true }).sort({
         createdAt: -1,
       });
-      return res.status(201).json({ user });
-    }
-
-    user = await User.findById({ _id: id }).sort({
-      createdAt: -1,
-    });
-
-    if (!user.superAdmin) {
-      user = await User.find({ addedBy: id }).sort({
+    } else {
+      user = await User.findById({ _id: id }).sort({
         createdAt: -1,
       });
 
@@ -264,12 +246,22 @@ export const users = async (req, res) => {
           .json({ error: `No such a user by this id ${id}` });
       }
 
-      return res.status(201).json({ user });
-    }
+      if (!user.superAdmin) {
+        user = await User.find({ addedBy: id }).sort({
+          createdAt: -1,
+        });
 
-    user = await User.find({ superAdmin: false }).sort({
-      createdAt: -1,
-    });
+        if (!user) {
+          return res
+            .status(401)
+            .json({ error: `No such a user by this id ${id}` });
+        }
+      } else {
+        user = await User.find({ superAdmin: false }).sort({
+          createdAt: -1,
+        });
+      }
+    }
 
     return res.status(201).json({ user });
   } catch (error) {
@@ -305,3 +297,38 @@ export const deleteUser = async (req, res) => {
   }
 };
 
+export const changeExpiryDate = async (req, res) => {
+  try {
+    const { userId, adminId } = req.params;
+
+    const { expiryDate } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({ message: "User Id not found" });
+    }
+
+    if (!adminId) {
+      return res.status(401).json({ message: "You are not an Admin" });
+    }
+
+    if (!expiryDate) {
+      return res.status(401).json({ message: "Expiry Date not found" });
+    }
+
+    const admin = await User.findById({ _id: adminId });
+
+    if (!admin.superAdmin) {
+      return res.status(401).json({ message: "You are not an Admin" });
+    }
+
+    const user = User.findByIdAndUpdate(
+      { _id: userId },
+      { expiryDate: expiryDate },
+      { new: true }
+    ).catch((err) => console.log(err.message));
+
+    return res.status(201).json({ message: "Expiry Date Updated", data: user });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal Server error" });
+  }
+};
