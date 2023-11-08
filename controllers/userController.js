@@ -135,7 +135,7 @@ export const verifyEmail = async (req, res) => {
       return res.status(400).json({ error: "Email is not getting" });
     }
 
-    const subject = "OTP From Stream Well";
+    const subject = "OTP From Sky Stream ";
     newOtp = generateOTP();
     transporter.sendMail(message(email, subject, newOtp), cb);
     res.status(200).json(email);
