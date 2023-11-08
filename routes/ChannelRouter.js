@@ -9,7 +9,6 @@ const channelRouter=express.Router();
 channelRouter.post('/:userId?',createChannel);
 channelRouter.get("/:userId?", getChannel);
 channelRouter.get('/delete/:channelId?',deleteChannel);
-channelRouter.get('/preview/:channelId?', preview);
 channelRouter.post('/block-channel/:channelId?',blockChannel );
 
 
