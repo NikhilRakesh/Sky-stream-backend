@@ -56,12 +56,14 @@ export const deletePush = async (req, res) => {
     }
 
     const edge = await Eadge.deleteOne({ _id: channelId })
-      .then((data) => console.log(data))
+      .then((data) => console.log(data)).then(()=>{
+        
+        restartServer();
+      })
       .catch((err) => {
         console.log(err.message);
       });
 
-      restartServer();
 
     res.status(204).json({ message: "No Content" });
   } catch (error) {

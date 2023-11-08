@@ -121,9 +121,19 @@ async function setupNMS(trans, edge) {
 
   nms.run();
 
+  nms.on('prePlay', async (id, StreamPath, args) => {
+    console.log('[NodeEvent on prePlay]', `id=${id} StreamPath=${StreamPath} args=${JSON.stringify(args)}`);
+    const blockedData = await Channel.findOne({ streamKey: StreamPath });
+    if(blockedData.isBlocked){
+      const session = nms.getSession(id);
+      return session.reject();
+    }
+    
+  });
+
   nms.on("prePublish", async (id, StreamPath, args) => {
     const isValidStreamKey = channelArray.includes(StreamPath);
-    if (!isValidStreamKey) {
+    if (!isValidStreamKey ) {
       const session = nms.getSession(id);
       return session.reject();
     }
@@ -176,7 +186,7 @@ async function startServer() {
   setTimeout(async () => {
     const { trans, edge } = await loadConfigStart();
     nms = await setupNMS(trans, edge);
-  }, 1500);
+  }, 1000);
 }
 
 export async function restartServer() {

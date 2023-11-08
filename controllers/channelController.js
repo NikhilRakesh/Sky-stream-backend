@@ -4,6 +4,29 @@ import Channel from "../models/channelModel.js";
 import User from "../models/userModel.js";
 import { restartServer } from "../server.js";
 
+export const blockChannel = async (req,res)=>{
+  try{
+    const {channelId} = req.params;
+    const {blocked} = req.body;
+    if(!channelId)
+    {
+      return res.status(401).json({message:"Channel Id not found"});
+    }
+    if(blocked===undefined)
+    {
+      return res.status(401).json({message:"Blocked not found"});
+    }
+    await Channel.findByIdAndUpdate({_id:channelId},{isBlocked:blocked});
+    restartServer();
+    return res.status(201).json({message:"Channel Updated"});
+    
+  }
+  catch(err)
+  {
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+}
+
 export const createChannel = async (req, res) => {
   try {
     const { name, domain, streamKey } = req.body;
