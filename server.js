@@ -149,6 +149,8 @@ async function setupNMS(trans, edge) {
     );
   });
 
+  
+
   nms.on("donePublish", async (id, StreamPath, args) => {
     const channel = await Channel.findOne({ streamKey: StreamPath });
     const user = await User.findById(channel.userId);

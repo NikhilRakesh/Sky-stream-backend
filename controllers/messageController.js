@@ -1,3 +1,4 @@
+import { stat } from "fs";
 import Message from "../models/contactModel.js";
 import User from "../models/userModel.js";
 
@@ -99,6 +100,37 @@ export const contactUs = async (req, res) => {
 
   }
 
+}
+
+export const deleteInbox = async (req,res)=>{
+  try{
+
+    const {userId} = req.params
+    const {Ids} = req.body
+    if(!userId){
+      return res.status(401).json({message:"Not authorized"})
+    }
+    const userData = await User.findById({_id:userId})
+    if(!userData.superAdmin)
+    {
+      return res.status(401).json({message:"Not authorized"})
+    }
+
+    if(!Ids){
+      return res.status(401).json({message:"No Messages Selected"})
+    }
+
+    Ids.map(async (index)=>{
+     await Message.findByIdAndDelete({_id:index})
+    })
+    return res.status(201).json({message:"Messages deleted successfully"})
+                 
+  }
+  catch(err)
+  {
+    return res.status(500).json({message:"Internal Server Error"})
+    
+  }
 }
 
   

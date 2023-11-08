@@ -21,7 +21,7 @@ import authRouter from "./routes/authRouter.js";
 const PORT=process.env.PORT||5000;
 
 const app=express();
-
+     
 app.use(express.json());
 
 app.use(helmet())
@@ -37,6 +37,7 @@ app.use(
       "http://localhost:5173",
       "https://skystream.in/",
       "http://192.168.29.169:5173/",
+      "http://192.168.29.88:5173/"
     ],
   })
 );

@@ -4,30 +4,64 @@ import Channel from "../models/channelModel.js";
 import User from "../models/userModel.js";
 import { restartServer } from "../server.js";
 
+export const preview = async (req, res) => {
+  try {
+
+    const { channelId } = req.params;
+    console.log("Channel Id : ",channelId);
+
+    if (!channelId) {
+      return res.status(401).json({ message: "User authentication failed" });
+    }
+
+    const channelData = await Channel.findById(channelId);
+    console.log("Channel Data : ",channelData);
+    const pageContent = `
+    <script src="https://cdn.bootcss.com/flv.js/1.5.0/flv.min.js"></script>
+    <video id="videoElement"></video>
+    <script>
+        if (flvjs.isSupported()) {
+            var videoElement = document.getElementById('videoElement');
+            var flvPlayer = flvjs.createPlayer({
+                type: 'flv',
+                url: 'http://localhost:8000${channelData.streamKey}.flv'
+            });
+            flvPlayer.attachMediaElement(videoElement);
+            flvPlayer.load();
+            flvPlayer.play();
+        }
+    </script> `;
+
+    res.send(pageContent);
+  } catch (err) {
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+  
 export const createChannel = async (req, res) => {
   try {
     const { name, domain, streamKey } = req.body;
     const { userId } = req.params;
-
+  
     if (!userId) {
       return res.status(401).json({ message: "User authentication failed" });
     }
-
+  
     const isAdmin = await User.findById(userId);
-
+  
     if (!isAdmin || !isAdmin.createChannel) {
       return res.status(401).json({ message: "Not authorized" });
     }
-
+  
     if (!name || !domain) {
       return res.status(400).json({ message: "Please provide all fields" });
     }
 
     let APP = await App.findOne({});
-
+  
     let number;
     let deleted = false;
-
+  
     if (!APP || APP.deletedNumber.length === 0) {
       const app = new App({
         name: "live",
@@ -49,8 +83,8 @@ export const createChannel = async (req, res) => {
 
     const userApp = "live" + number;
     const key = "/" + userApp + "/" + streamKey;
-
-    const newChannel = new Channel({
+ 
+     const newChannel = new Channel({
       userId,
       name,
       domain,
