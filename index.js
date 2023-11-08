@@ -37,7 +37,9 @@ app.use(
       "http://localhost:5173",
       "https://skystream.in/",
       "http://192.168.29.169:5173/",
-      "http://192.168.29.88:5173/"
+      "http://192.168.29.88:5173/",
+      "http://localhost:8000",
+      "https://cdn.bootcss.com/flv.js/1.5.0/flv.min.js",
     ],
   })
 );
