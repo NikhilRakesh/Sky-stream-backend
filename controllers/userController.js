@@ -164,7 +164,6 @@ export const updateUserPermission = async (req, res) => {
 
     await User.findByIdAndUpdate(id, updateData, { new: true, multi: true })
       .then((data) => {
-        console.log(data);
         return res.status(201).json(data);
       })
       .catch((err) => {

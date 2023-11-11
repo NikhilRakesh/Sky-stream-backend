@@ -59,37 +59,34 @@ export const getStreamStats = async (req, res) => {
 export const getLiveNow = async (req, res) => {
   try {
     const { userId } = req.params;
-    console.log(userId);
-    let data;
-    let liveNowKeys;
+
     const headers = {
       Authorization: `Basic ${base64Credentials}`,
     };
 
-    const user = await User.findById({ _id: userId });
+    const user = await User.findById(userId);
 
-    const response = await fetch("http://localhost:8000/api/streams", {
-      method: "GET",
-      headers,
-    });
-    data = await response.json();
-    liveNowKeys = Object.keys(data);
+    let liveNowChannel;
 
     if (user.superAdmin) {
-      const liveNowChannel = await Channel.find({ status: true });
-      res.status(200).json({ data: liveNowChannel });
+      liveNowChannel = await Channel.find({ status: true });
+    } else {
+      const response = await fetch("http://localhost:8000/api/streams", {
+        method: "GET",
+        headers,
+      });
+      const data = await response.json();
+      liveNowChannel = Object.values(data).filter(
+        (channel) => channel.userId === user._id && channel.status
+      );
     }
-
-    const liveNowChannel = await Channel.find({
-      userId: user._id,
-      status: true,
-    });
 
     res.status(200).json({ data: liveNowChannel });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 export const getSingleLiveNow = async (req, res) => {
   try {

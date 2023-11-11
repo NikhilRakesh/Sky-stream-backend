@@ -44,13 +44,13 @@ async function loadConfig() {
         app: name + i,
         hls: true,
         hlsFlags: "[hls_time=2:hls_list_size=3:hls_flags=delete_segments]",
-        hlsKeep: true,
+        hlsKeep: true, // to prevent hls file delete after end the stream
         dash: true,
         dashFlags: "[f=dash:window_size=3:extra_window_size=5]",
-        dashKeep: true,
-        mp4: true,
-        mp4Flags: "[movflags=frag_keyframe+empty_moov]",
+        dashKeep: true, // to prevent dash file delete after end the stream
       });
+
+      
     }
   }
   return transTasksArray;
@@ -87,10 +87,10 @@ async function setupNMS(trans, edge) {
   const nms = new NodeMediaServer({
     rtmp: {
       port: 1935,
-      chunk_size: 40000,
+      chunk_size: 60000,
       gop_cache: true,
-      ping: 60,
-      ping_timeout: 80,
+      ping: 30,
+      ping_timeout: 60,
     },
     http: {
       port: 8000,
@@ -121,15 +121,6 @@ async function setupNMS(trans, edge) {
 
   nms.run();
 
-  nms.on('prePlay', async (id, StreamPath, args) => {
-    console.log('[NodeEvent on prePlay]', `id=${id} StreamPath=${StreamPath} args=${JSON.stringify(args)}`);
-    const blockedData = await Channel.findOne({ streamKey: StreamPath });
-    if(blockedData.isBlocked){
-      const session = nms.getSession(id);
-      return session.reject();
-    }
-    
-  });
 
   nms.on("prePublish", async (id, StreamPath, args) => {
     const isValidStreamKey = channelArray.includes(StreamPath);
@@ -178,13 +169,22 @@ async function setupNMS(trans, edge) {
     );
   });
 
+  nms.on("prePlay", (id, StreamPath, args) => {
+    console.log(
+      "[NodeEvent on prePlay]",
+      `id=${id} StreamPath=${StreamPath} args=${JSON.stringify(args)}`
+    );
+    // let session = nms.getSession(id);
+    // session.reject();
+  });
+
   return nms;
 }
 
 async function startServer() {
   await findChannel();
   setTimeout(async () => {
-    const { trans, edge } = await loadConfigStart();
+    const { trans, edge } = await loadConfigStart()
     nms = await setupNMS(trans, edge);
   }, 1000);
 }

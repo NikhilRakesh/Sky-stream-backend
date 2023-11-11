@@ -16,11 +16,16 @@ import messageRoute from "./routes/messageRouter.js";
 import postRouter from "./routes/pushRouter.js";
 import domainRouter from "./routes/domainRouter.js";
 import authRouter from "./routes/authRouter.js";
+import { createServer } from "http";
 
 
 const PORT=process.env.PORT||5000;
 
 const app=express();
+
+const server = createServer(app);
+export const clients = new Set();
+
      
 app.use(express.json());
 
@@ -37,11 +42,10 @@ app.use(
       "http://localhost:5173",
       "https://skystream.in/",
       "http://192.168.29.169:5173/",
-      "http://192.168.29.88:5173/",
       "http://localhost:8000",
       "https://cdn.bootcss.com/flv.js/1.5.0/flv.min.js",
     ],
-  })
+  }) 
 );
 
 

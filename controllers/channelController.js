@@ -4,53 +4,60 @@ import Channel from "../models/channelModel.js";
 import User from "../models/userModel.js";
 import { restartServer } from "../server.js";
 
-export const blockChannel = async (req,res)=>{
-  try{
-    const {channelId} = req.params;
-    const {blocked} = req.body;
-    if(!channelId)
-    {
-      return res.status(401).json({message:"Channel Id not found"});
+export const blockChannel = async (req, res) => {
+  try {
+    const { channelId } = req.params;
+    const { blocked } = req.body;
+    if (!channelId) {
+      return res.status(401).json({ message: "Channel Id not found" });
     }
-    if(blocked===undefined)
-    {
-      return res.status(401).json({message:"Blocked not found"});
+    if (blocked === undefined) {
+      return res.status(401).json({ message: "Blocked not found" });
     }
-    await Channel.findByIdAndUpdate({_id:channelId},{isBlocked:blocked});
+    if (blocked === true) {
+      await Channel.findByIdAndUpdate(
+        { _id: channelId },
+        { isBlocked: blocked, status: false },
+        { new: true }
+      );
+    } else {
+      await Channel.findByIdAndUpdate(
+        { _id: channelId },
+        { isBlocked: blocked }
+      );
+    }
+
     restartServer();
-    return res.status(201).json({message:"Channel Updated"});
-    
-  }
-  catch(err)
-  {
+    return res.status(201).json({ message: "Channel Updated" });
+  } catch (err) {
     return res.status(500).json({ message: "Internal Server Error" });
   }
-}
+};
 
 export const createChannel = async (req, res) => {
   try {
     const { name, domain, streamKey } = req.body;
     const { userId } = req.params;
-  
+
     if (!userId) {
       return res.status(401).json({ message: "User authentication failed" });
     }
-  
+
     const isAdmin = await User.findById(userId);
-  
+
     if (!isAdmin || !isAdmin.createChannel) {
       return res.status(401).json({ message: "Not authorized" });
     }
-  
+
     if (!name || !domain) {
       return res.status(400).json({ message: "Please provide all fields" });
     }
 
     let APP = await App.findOne({});
-  
+
     let number;
     let deleted = false;
-  
+
     if (!APP || APP.deletedNumber.length === 0) {
       const app = new App({
         name: "live",
@@ -72,8 +79,8 @@ export const createChannel = async (req, res) => {
 
     const userApp = "live" + number;
     const key = "/" + userApp + "/" + streamKey;
- 
-     const newChannel = new Channel({
+
+    const newChannel = new Channel({
       userId,
       name,
       domain,
@@ -118,8 +125,6 @@ export const getChannel = async (req, res) => {
 
     const channels = await Channel.find({ userId: userId });
 
-    console.log(channels);
-
     return res.status(201).json({ data: channels });
   } catch (error) {
     return res.status(500).json({ message: "Internal Server Error" });
@@ -128,10 +133,18 @@ export const getChannel = async (req, res) => {
 
 export const deleteChannel = async (req, res) => {
   try {
-    const { channelId } = req.params;
+    const { channelId, userId } = req.params;
+
+    console.log(channelId);
 
     if (!channelId) {
       return res.status(401).json({ message: "Channel Id not found" });
+    }
+
+    const user = await User.findById({ _id: userId });
+
+    if (!user.superAdmin && !user.deleteChannel) {
+      res.status(401).json({ message: "Not authorized to delete the channel" });
     }
 
     const channelNumber = await Channel.findById({ _id: channelId });
@@ -146,9 +159,9 @@ export const deleteChannel = async (req, res) => {
 
     const channel = await Channel.findByIdAndDelete({ _id: channelId });
 
-    return res.status(204).json({ message: "Channel deleted" });
-
     restartServer();
+
+    return res.status(204).json({ message: "Channel deleted" });
   } catch (error) {
     return res.status(500).json({ message: "Internal Server Error" });
   }
