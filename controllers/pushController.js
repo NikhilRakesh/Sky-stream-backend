@@ -1,7 +1,12 @@
+import fetch from "node-fetch";
 import Channel from "../models/channelModel.js";
 import Eadge from "../models/eadgeModel.js";
 import User from "../models/userModel.js";
 import { restartServer } from "../server.js";
+const username = "codenuity";
+const password = "codenuity";
+const authString = `${username}:${password}`;
+const base64Credentials =  Buffer.from(authString).toString("base64");
 
 export const pushStream = async (req, res) => {
   try {
@@ -9,10 +14,13 @@ export const pushStream = async (req, res) => {
     const { edge } = req.body;
 
     if (!userId || !channelId) {
+      console.log("here");
       return res.status(401).json({ message: "Not authorized" });
     }
 
     const user = await User.findById({ _id: userId });
+
+    console.log(user.superAdmin);
 
     if (!user.superAdmin) {
       return res.status(401).json({ message: "You are not an Admin" });
@@ -20,29 +28,49 @@ export const pushStream = async (req, res) => {
 
     const channel = await Channel.findById(channelId);
 
-    const newName = channel.streamKey.split("/")[1];
+    const newApp = channel.streamKey.split("/")[1];
+    const newName = channel.streamKey.split("/")[2];
 
-    const newEdge = new Eadge({
+    const headers = await {
+      Authorization: `Basic ${base64Credentials}`,
+      "Content-Type": "application/json",
+    };
+
+    const body = JSON.stringify({
       name: newName,
-      edge: edge,
-      channelId: channel._id,
+      app: newApp,
+      url: edge,
     });
 
-    await newEdge
-      .save()
-      .then(async (data) => {
-        await restartServer();
-        console.log(data)
-      })
-      .then((data) => res.status(200).json({ data: data }))
-      .catch((err) =>{
-        console.log(err.message)
-      
-        res.status(500).json({ message: "Internal Server error" })
-       });
-     
+    const response = await fetch("http://127.0.0.1:8000/api/relay/push", {
+      method: "POST",
+      headers,
+      body,
+    });
+
+    if (!response.ok) {
+      console.log(response);
+    }
+
+    if (response.status === 200) {
+      const responseData = await response.text();
+
+      const newEdge = new Eadge({
+        name: newName,
+        edge: edge,
+        channelId: channel._id,
+        pushID: responseData,
+      });
+
+      await newEdge
+        .save()
+        .then((data) => res.status(200).json({ data: data }))
+        .catch((err) => {
+          res.status(500).json({ message: "Internal Server error" });
+        });
+    }
   } catch (error) {
-    console.log(error.message); 
+    console.log(error.message);
     res.status(500).json({ message: "Internal Server error" });
   }
 };
@@ -55,19 +83,36 @@ export const deletePush = async (req, res) => {
       return res.status(401).json({ message: "Not authorized" });
     }
 
-    const edge = await Eadge.deleteOne({ _id: channelId })
-      .then((data) => console.log(data)).then(()=>{
-        
-        restartServer();
-      })
-      .catch((err) => {
+    const headers = await {
+      Authorization: `Basic ${base64Credentials}`,
+      "Content-Type": "application/json",
+    };
+
+    const edge = await Eadge.findOne({ _id: channelId });
+    console.log(edge);
+
+    const response = await fetch(
+      `http://127.0.0.1:8000/api/relay/${edge.pushID}`,
+      {
+        method: "DELETE",
+        headers,
+      }
+    );
+
+    if (!response.ok) {
+      console.log(response);
+      return res.status(401).json({ message: "Not authorized" });
+    }
+
+    if (response.status === 200) {
+      const edge = await Eadge.deleteOne({ _id: channelId }).catch((err) => {
         console.log(err.message);
       });
-
-
+    }
     res.status(204).json({ message: "No Content" });
   } catch (error) {
     res.status(500).json({ message: "Internal Server error" });
+    console.log(error.message);
   }
 };
 

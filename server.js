@@ -1,19 +1,34 @@
 import NodeMediaServer from "node-media-server";
-import nmsConfig from "./config/mediaServer.js";
 import Channel from "./models/channelModel.js";
 import App from "./models/appModel.js";
 import User from "./models/userModel.js";
 import Eadge from "./models/eadgeModel.js";
+import { deleteFolderRecursive } from "./test.js";
+import fs from "fs";
+import path from "path";
 let channelArray = [];
 let nms;
+let blockChannelArray = [];
+const folderPath = path.join(new URL(".", import.meta.url).pathname, "media");
 
 const findChannel = async () => {
   try {
-    const channels = await Channel.find();
+    const channels = await Channel.find({isBlocked:false});
     const streamKeys = channels.map((data) => data.streamKey);
     channelArray = [...streamKeys];
   } catch (err) {
     console.error(err);
+  }
+};
+
+export const blockedChannels = async () => {
+  try {
+    const channles = await Channel.find({ isBlocked: true });
+    const streamKeys = channles.map((data) => data.streamKey.split("/")[1]);
+    blockChannelArray = [...streamKeys];
+    console.log(blockChannelArray);
+  } catch (error) {
+    confirm.log(error);
   }
 };
 
@@ -32,7 +47,7 @@ async function loadConfig() {
         mp4: true,
         mp4Flags: "[movflags=frag_keyframe+empty_moov]",
       },
-    ]; 
+    ];
   }
 
   const transTasksArray = [];
@@ -49,8 +64,6 @@ async function loadConfig() {
         dashFlags: "[f=dash:window_size=3:extra_window_size=5]",
         dashKeep: true, // to prevent dash file delete after end the stream
       });
-
-      
     }
   }
   return transTasksArray;
@@ -121,10 +134,9 @@ async function setupNMS(trans, edge) {
 
   nms.run();
 
-
   nms.on("prePublish", async (id, StreamPath, args) => {
     const isValidStreamKey = channelArray.includes(StreamPath);
-    if (!isValidStreamKey ) {
+    if (!isValidStreamKey) {
       const session = nms.getSession(id);
       return session.reject();
     }
@@ -150,8 +162,8 @@ async function setupNMS(trans, edge) {
     );
   });
 
-  
-
+ 
+ 
   nms.on("donePublish", async (id, StreamPath, args) => {
     const channel = await Channel.findOne({ streamKey: StreamPath });
     const user = await User.findById(channel.userId);
@@ -183,10 +195,11 @@ async function setupNMS(trans, edge) {
 
 async function startServer() {
   await findChannel();
-  setTimeout(async () => {
-    const { trans, edge } = await loadConfigStart()
-    nms = await setupNMS(trans, edge);
-  }, 1000);
+  // deleteFolderRecursive(folderPath);
+   setTimeout(async () => {
+     const { trans, edge } = await loadConfigStart();
+     nms = await setupNMS(trans, edge); 
+   },1000)
 }
 
 export async function restartServer() {

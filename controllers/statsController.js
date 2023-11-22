@@ -1,7 +1,6 @@
 import fetch from "node-fetch";
 import User from "../models/userModel.js";
 import Channel from "../models/channelModel.js";
-
 const username = "codenuity";
 const password = "codenuity";
 const authString = `${username}:${password}`;
@@ -9,7 +8,7 @@ const base64Credentials = Buffer.from(authString).toString("base64"); // Use Buf
 
 export const getSystemStats = async (req, res) => {
   try {
-    let data;
+   
     const headers = {
       Authorization: `Basic ${base64Credentials}`,
     };
@@ -18,18 +17,30 @@ export const getSystemStats = async (req, res) => {
       method: "GET",
       headers,
     });
-    data = await response.json();
+
+    const data = await response.json();
     const memoryUsage = process.memoryUsage();
     const totalMemoryUsage = Math.floor(
       (memoryUsage.rss + memoryUsage.heapUsed) / (1024 * 1024)
     );
 
-    let serverStats = {
-      inBandwidth: Math.floor(data.net.inbytes / 125000) || 0,
-      outBandwidth: Math.floor(data.net.outbytes / 125000) || 0,
+    let inband = 0;
+    let outband = 0;
+
+    console.log('inbuytes',data.net.inbytes);
+
+     inband = Math.floor(data.net.inbytes / (1024 * 1024) ) || 0;
+
+     outband = Math.floor(data.net.outbytes / (1024 * 1024))  || 0;
+
+    const serverStats = {
+      inBandwidth: inband,
+      outBandwidth: outband,
       cpuLoad: data.cpu.load,
       totalMemoryUsage,
     };
+
+    console.log(serverStats);
 
     res.status(200).json({ data: serverStats });
   } catch (error) {

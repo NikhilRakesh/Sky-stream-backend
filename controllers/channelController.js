@@ -8,32 +8,34 @@ export const blockChannel = async (req, res) => {
   try {
     const { channelId } = req.params;
     const { blocked } = req.body;
+
+    // Validate inputs
     if (!channelId) {
-      return res.status(401).json({ message: "Channel Id not found" });
+      return res.status(400).json({ message: "Channel Id not found" });
     }
     if (blocked === undefined) {
-      return res.status(401).json({ message: "Blocked not found" });
-    }
-    if (blocked === true) {
-      await Channel.findByIdAndUpdate(
-        { _id: channelId },
-        { isBlocked: blocked, status: false },
-        { new: true }
-      );
-    } else {
-      await Channel.findByIdAndUpdate(
-        { _id: channelId },
-        { isBlocked: blocked }
-      );
+      return res.status(400).json({ message: "Blocked not found" });
     }
 
+    // Update the channel based on the blocked value
+    const updateFields = blocked
+      ? { isBlocked: true, status: false }
+      : { isBlocked: false };
+    const updatedChannel = await Channel.findByIdAndUpdate(
+      { _id: channelId },
+      updateFields,
+      { new: true }
+    );
+
+    // Restart server (assuming restartServer is a function that restarts your server)
     restartServer();
-    return res.status(201).json({ message: "Channel Updated" });
+
+    return res.status(201).json({ message: "Channel Updated", updatedChannel });
   } catch (err) {
+    console.error(err);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 export const createChannel = async (req, res) => {
   try {
     const { name, domain, streamKey } = req.body;
