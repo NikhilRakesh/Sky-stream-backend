@@ -60,8 +60,6 @@ import { streamKeys } from "./index.js";
   
   nms.on("prePublish", async (id, StreamPath, args) => {
 
-    console.log('sessionIdd',id)
-
       const isValidStreamKey = streamKeys.includes(StreamPath);
       if (!isValidStreamKey) {
         const session = nms.getSession(id);
@@ -106,29 +104,5 @@ import { streamKeys } from "./index.js";
     );
   });
 
-  nms.on("prePlay", (id, StreamPath, args) => {
-    console.log(
-      "[NodeEvent on prePlay]",
-      `id=${id} StreamPath=${StreamPath} args=${JSON.stringify(args)}`
-    );
-    // let session = nms.getSession(id);
-    // session.reject();
-  });
-
+ 
   export default nms;
-
-// async function startServer() {
-//   await findChannel();
-//   // deleteFolderRecursive(folderPath);
-//    setTimeout(async () => {
-//      const { trans, edge } = await loadConfigStart();
-//      nms = await setupNMS(trans, edge); 
-//    },1000)
-// }
-
-// export async function restartServer() {
-//   nms.stop();
-//   startServer();
-// }
-
-// export default startServer();

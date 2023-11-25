@@ -85,7 +85,7 @@ export const getLiveNow = async (req, res) => {
     if (user.superAdmin) {
       liveNowChannel = await Channel.find({ status: true });
     } else {
-      console.log('user',user)
+
       const response = await fetch("http://localhost:8000/api/streams", {
         method: "GET",
         headers,
@@ -93,7 +93,6 @@ export const getLiveNow = async (req, res) => {
       const data = await response.json();
       liveNowChannel = await Channel.find({ userId: userId, status: true });
 
-      console.log('liveNowChannel',Object.values(data))
     }
 
     res.status(200).json({ data: liveNowChannel });

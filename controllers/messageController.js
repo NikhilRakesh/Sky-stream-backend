@@ -5,8 +5,7 @@ import User from "../models/userModel.js";
 export const addMessage = async (req, res) => {
   try {
     const { message, to, block ,subject} = req.body;
-    console.log('req.body',req.body)
-    
+
     const { id } = req.params;
 
     if (!message || !to) {

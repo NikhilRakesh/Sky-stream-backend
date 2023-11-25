@@ -14,14 +14,14 @@ export const pushStream = async (req, res) => {
     const { edge } = req.body;
  
     if (!userId || !channelId) {
-      console.log("here");
+    
       return res.status(401).json({ message: "Not authorized" });
     }
 
     const user = await User.findById({ _id: userId });
 
     if (!user.superAdmin && !user.pushLive) {
-      console.log(user.pushLive) 
+ 
       return res.status(401).json({ message: "You are not an Admin" });
     }
 
@@ -88,7 +88,7 @@ export const deletePush = async (req, res) => {
     };
 
     const edge = await Eadge.findOne({ _id: channelId });
-    console.log(edge);
+  
 
     const response = await fetch(
       `http://127.0.0.1:8000/api/relay/${edge.pushID}`,
@@ -119,7 +119,6 @@ export const getPush = async (req, res) => {
   try {
     const { channelId } = req.params;
 
-    console.log(channelId);
 
     if (!channelId) {
       return res.status(401).json({ message: "Not authorized" });

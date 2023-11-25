@@ -3,10 +3,10 @@ import User from "../models/userModel.js";
 
 export const createDomain = async (req, res) => {
   try {
-    console.log("req.body", req.body);
+  
     const { domain } = req.body;
     const id = req.params.userId;
-    console.log("req.params", req.params);
+
 
     if (!id) return res.status(401).json({ message: "User id is required" });
 

@@ -6,10 +6,6 @@ export const checkSession = async(req, res, next) => {
         
         const id = req.session.userId;
 
-        console.log(id);
-
-        
-
         if(!id){
             return res.status(401).json({message: "No session provided"})
         }

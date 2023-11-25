@@ -70,12 +70,8 @@ app.get('/', (req, res) => {
       channels.forEach((element) => {
         streamKeys.push(element.streamKey);
       });
-
-      console.log(streamKeys);
     } catch (error) {
-
       console.log(error);
-
     }
   };
 
