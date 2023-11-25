@@ -3,10 +3,7 @@ import Message from "../models/contactModel.js";
 import User from "../models/userModel.js";
 
 export const addMessage = async (req, res) => {
-    
   try {
-    
-
     const { message, to, block ,subject} = req.body;
     console.log('req.body',req.body)
     

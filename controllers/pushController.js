@@ -2,9 +2,9 @@ import fetch from "node-fetch";
 import Channel from "../models/channelModel.js";
 import Eadge from "../models/eadgeModel.js";
 import User from "../models/userModel.js";
-import { restartServer } from "../server.js";
-const username = "codenuity";
-const password = "codenuity";
+// import { restartServer } from "../server.js";
+const username = "codenuity"; 
+const password = "codenuity"; 
 const authString = `${username}:${password}`;
 const base64Credentials =  Buffer.from(authString).toString("base64");
 
@@ -12,7 +12,7 @@ export const pushStream = async (req, res) => {
   try {
     const { userId, channelId } = req.params;
     const { edge } = req.body;
-
+ 
     if (!userId || !channelId) {
       console.log("here");
       return res.status(401).json({ message: "Not authorized" });
@@ -20,9 +20,8 @@ export const pushStream = async (req, res) => {
 
     const user = await User.findById({ _id: userId });
 
-    console.log(user.superAdmin);
-
-    if (!user.superAdmin) {
+    if (!user.superAdmin && !user.pushLive) {
+      console.log(user.pushLive) 
       return res.status(401).json({ message: "You are not an Admin" });
     }
 

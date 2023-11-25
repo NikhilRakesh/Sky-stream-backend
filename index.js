@@ -6,29 +6,25 @@ import userRouter from "./routes/userRouter.js";
 import channelRouter from './routes/ChannelRouter.js';
 import helmet from 'helmet';
 import cors from 'cors';
-import os from 'os';
 import "./server.js";
 dotenv.config();
-import mongoose from "./config/dbConfig.js";
-import cluster from "cluster";
+// import mongoose from "./config/dbConfig.js";
 import StatsRouter from "./routes/statsRoute.js";
 import messageRoute from "./routes/messageRouter.js";
 import postRouter from "./routes/pushRouter.js";
 import domainRouter from "./routes/domainRouter.js";
 import authRouter from "./routes/authRouter.js";
-import { createServer } from "http";
+import Channel from "./models/channelModel.js";
+import connectDB from "./config/dbConfig.js";
+import nms from "./server.js";
 
+export const streamKeys = []; 
 
+ 
 const PORT=process.env.PORT||5000;
 
-const app=express();
-
-const server = createServer(app);
-export const clients = new Set();
-
-     
+const app=express();    
 app.use(express.json());
-
 app.use(helmet())
 app.use(helmet.crossOriginResourcePolicy({policy:'cross-origin'}))
 app.use(morgan("dev"));
@@ -67,32 +63,33 @@ app.get('/', (req, res) => {
     res.sendStatus(200);
   });
 
+  const loadStreamKeys = async () => {
+    try {
+      const channels = await Channel.find({ isBlocked: false });
 
-const numCpu = os.cpus().length - 2 
+      channels.forEach((element) => {
+        streamKeys.push(element.streamKey);
+      });
 
-if (process.env.SERVER_TYPE === "production") {
-  if (cluster.isPrimary) {
-    console.log(`Primary ${process.pid} is running`);
-    for (let i = 0; i < numCpu; i++) {
-      cluster.fork();
+      console.log(streamKeys);
+    } catch (error) {
+
+      console.log(error);
+
     }
-    cluster.on("exit", (worker, code, signal) => {
-      console.log(`${worker.process.pid} has exited`);
-      cluster.fork();
-    });
-  } else {
-    app.listen(PORT, () =>
-      console.log(
-        `Server ${process.pid} is running successfully on PORT ${PORT}`
-      )
-    );
-  }
-} else {
-  app.listen(PORT, () =>
+  };
+
+  loadStreamKeys();
+
+  connectDB().then(()=>{
+   app.listen(PORT, () =>
     console.log(`Server ${process.pid} is running successfully on PORT ${PORT}`)
-  );
-}             
+  );  
+  nms.run();
 
+  })
 
+ 
+            
 export default app ;
    

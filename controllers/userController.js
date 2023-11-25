@@ -24,7 +24,7 @@ export const userCreation = async (req, res, next) => {
       deleteChannel,
       createChannel,
       deleteUser,
-      expiryDate,
+      expiryDate, 
     } = req.body;
     const { id } = req.params;
 

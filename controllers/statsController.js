@@ -4,7 +4,11 @@ import Channel from "../models/channelModel.js";
 const username = "codenuity";
 const password = "codenuity";
 const authString = `${username}:${password}`;
-const base64Credentials = Buffer.from(authString).toString("base64"); // Use Buffer to encode in base64
+const base64Credentials = Buffer.from(authString).toString("base64"); 
+ let lastInBytes= 0 ;
+let lastOtBytes= 0 ;
+    let inband = 0;
+    let outband = 0;
 
 export const getSystemStats = async (req, res) => {
   try {
@@ -24,24 +28,23 @@ export const getSystemStats = async (req, res) => {
       (memoryUsage.rss + memoryUsage.heapUsed) / (1024 * 1024)
     );
 
-    let inband = 0;
-    let outband = 0;
+    inband =  parseFloat(
+     ((data.net.inbytes - lastInBytes) / (1024 * 1024)).toFixed(2)
+   );
+    outband = parseFloat(
+     ((data.net.outbytes - lastOtBytes) / (1024 * 1024)).toFixed(2)
+   );
 
-    console.log('inbuytes',data.net.inbytes);
+      
+     const serverStats = { 
+       inBandwidth: inband || 0,
+       outBandwidth: outband || 0,
+       cpuLoad: data.cpu.load,
+       totalMemoryUsage,
+      };
 
-     inband = Math.floor(data.net.inbytes / (1024 * 1024) ) || 0;
-
-     outband = Math.floor(data.net.outbytes / (1024 * 1024))  || 0;
-
-    const serverStats = {
-      inBandwidth: inband,
-      outBandwidth: outband,
-      cpuLoad: data.cpu.load,
-      totalMemoryUsage,
-    };
-
-    console.log(serverStats);
-
+      lastInBytes = data.net.inbytes
+      lastOtBytes = data.net.outbytes 
     res.status(200).json({ data: serverStats });
   } catch (error) {
     console.log(error.message);
@@ -82,14 +85,15 @@ export const getLiveNow = async (req, res) => {
     if (user.superAdmin) {
       liveNowChannel = await Channel.find({ status: true });
     } else {
+      console.log('user',user)
       const response = await fetch("http://localhost:8000/api/streams", {
         method: "GET",
         headers,
       });
       const data = await response.json();
-      liveNowChannel = Object.values(data).filter(
-        (channel) => channel.userId === user._id && channel.status
-      );
+      liveNowChannel = await Channel.find({ userId: userId, status: true });
+
+      console.log('liveNowChannel',Object.values(data))
     }
 
     res.status(200).json({ data: liveNowChannel });
@@ -98,6 +102,10 @@ export const getLiveNow = async (req, res) => {
   }
 };
 
+let singleInBytes = 0;
+let singleOutBytes = 0;
+let lastSingleInBytes = 0;
+let lastSingleOutBytes = 0;
 
 export const getSingleLiveNow = async (req, res) => {
   try {
@@ -125,15 +133,23 @@ export const getSingleLiveNow = async (req, res) => {
     }
 
     const publisherData = live[key].publisher;
-    const inBytes = publisherData.bytes;
+    singleInBytes = publisherData.bytes;
     const subscribers = live[key].subscribers;
-    const outBytes = subscribers.reduce((total, sub) => total + sub.bytes, 0);
+     singleOutBytes = subscribers.reduce((total, sub) => total + sub.bytes, 0);
 
-    const inMbps = (inBytes * 8) / 1000000;
-    const outMbps = (outBytes * 8) / 1000000;
+    const inMbps =  parseFloat(((singleInBytes - lastSingleInBytes) / (1024 * 1024)).toFixed(2));
+
+    const outMbps =  parseFloat(((singleOutBytes - lastSingleOutBytes) / (1024 * 1024)).toFixed(2));
+
+
+
+    lastSingleInBytes = publisherData.bytes;
+    lastSingleOutBytes = singleOutBytes;
+
 
     res.status(200).json({ data: { inMbps, outMbps } });
   } catch (error) {
+    console.log(error.message);
     res.status(500).json({ message: error.message });
   }
 };

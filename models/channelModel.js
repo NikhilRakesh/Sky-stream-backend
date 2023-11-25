@@ -33,14 +33,17 @@ const channelSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    isBlocked:{
-      type:Boolean,
-      default:false
-    
+    isBlocked: {
+      type: Boolean,
+      default: false,
     },
-    number:{
+    number: {
       type: Number,
-    }
+    },
+    sessionId: {
+      type: String,
+      default: '',
+    },
   },
   {
     timestamps: true,
