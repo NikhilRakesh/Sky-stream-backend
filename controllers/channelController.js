@@ -56,7 +56,7 @@ export const blockChannel = async (req, res) => {
     console.error(err);
     return res.status(500).json({ message: "Internal Server Error" });
   }
-};
+}; 
 
 export const createChannel = async (req, res) => {
   try {
@@ -69,40 +69,32 @@ export const createChannel = async (req, res) => {
 
     const isAdmin = await User.findById(userId);
 
+    const channels = await Channel.find({ userId: userId });
+
+    const isExisting = await Channel.findOne({
+      streamKey: `/${"live"}/${streamKey}`,
+    });
+
     if (!isAdmin || !isAdmin.createChannel) {
       return res.status(401).json({ message: "Not authorized" });
+    }
+
+    if (isExisting) {
+      return res.status(400).json({ message: "Channel already exists" });
+    }
+
+    if (!isAdmin.superAdmin && channels.length >= isAdmin.channelLimit) {
+      return res
+        .status(400)
+        .json({ message: "You have reached your channel limit" });
     }
 
     if (!name || !domain) {
       return res.status(400).json({ message: "Please provide all fields" });
     }
 
-    // let APP = await App.findOne({});
-
-    // let number;
-    // let deleted = false;
-
-    // if (!APP || APP.deletedNumber.length === 0) {
-    //   const app = new App({
-    //     name: "live",
-    //     number: 1,
-    //   });
-    //   await app.save();
-    //   APP = await App.findOne({});
-    //   number = APP.number;
-    // } else {
-    //   deleted = true;
-    //   number = APP.deletedNumber[0];
-    //   const newDeletedArray = APP.deletedNumber.slice(1);
-    //   await App.findOneAndUpdate(
-    //     { _id: APP._id },
-    //     { deletedNumber: newDeletedArray },
-    //     { new: true }
-    //   );
-    // }
-
     const userApp = "live";
-    const key = "/" + userApp + "/" + streamKey;
+    const key = `/${userApp}/${streamKey}`;
 
     const newChannel = new Channel({
       userId,
@@ -111,11 +103,9 @@ export const createChannel = async (req, res) => {
       streamKey: key,
     });
 
-    await newChannel.save().then((data) => {
-      streamKeys.push(data.streamKey);
-    });
+    await newChannel.save();
+    streamKeys.push(newChannel.streamKey);
 
-    // restartServer();
     return res.status(201).json(newChannel);
   } catch (error) {
     console.error(error.message);
@@ -156,7 +146,6 @@ export const deleteChannel = async (req, res) => {
     }
 
     const user = await User.findById({ _id: userId });
-
 
     if (!user.superAdmin && !user.deleteChannel) {
       res.status(401).json({ message: "Not authorized to delete the channel" });
