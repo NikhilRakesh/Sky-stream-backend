@@ -77,18 +77,7 @@ import { streamKeys } from "./index.js";
         mp4: true,
         mp4Flags: '[movflags=frag_keyframe+empty_moov]',
         },
-        {
-          app: "live14",
-          hls: true,
-        hlsFlags: '[hls_time=2:hls_list_size=3:hls_flags=delete_segments]',
-        hlsKeep: true, // to prevent hls file delete after end the stream
-        dash: true,
-        dashFlags: '[f=dash:window_size=3:extra_window_size=5]',
-        dashKeep: true 
-        ,
-        mp4: true,
-        mp4Flags: '[movflags=frag_keyframe+empty_moov]',
-        },
+ 
       ],
     },
     relay: {
