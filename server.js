@@ -32,7 +32,7 @@ import { streamKeys } from "./index.js";
         {
           app: "live",
           hls: true,
-          hlsFlags: "[hls_time=2:hls_list_size=3:hls_flags=delete_segments]",
+          hlsFlags: "[hls_time=1:hls_list_size=2:hls_flags=delete_segments]",
           hlsKeep: false, // to prevent hls file delete after end the stream
           dash: true,
           dashFlags: "[f=dash:window_size=3:extra_window_size=5]",
@@ -58,7 +58,7 @@ import { streamKeys } from "./index.js";
         {
           app: "live6",
           hls: true,
-          hlsFlags: "[hls_time=2:hls_list_size=3:hls_flags=delete_segments]",
+          hlsFlags: "[hls_time=1:hls_list_size=2:hls_flags=delete_segments]",
           hlsKeep: true, // to prevent hls file delete after end the stream
           dash: true,
           dashFlags: "[f=dash:window_size=3:extra_window_size=5]",
@@ -84,7 +84,7 @@ import { streamKeys } from "./index.js";
         {
           app: "live4",
           hls: true,
-          hlsFlags: "[hls_time=2:hls_list_size=3:hls_flags=delete_segments]",
+          hlsFlags: "[hls_time=1:hls_list_size=2:hls_flags=delete_segments]",
           hlsKeep: true, // to prevent hls file delete after end the stream
           dash: true,
           dashFlags: "[f=dash:window_size=3:extra_window_size=5]",
@@ -110,7 +110,7 @@ import { streamKeys } from "./index.js";
         {
           app: "live8",
           hls: true,
-          hlsFlags: "[hls_time=2:hls_list_size=3:hls_flags=delete_segments]",
+          hlsFlags: "[hls_time=1:hls_list_size=2:hls_flags=delete_segments]",
           hlsKeep: true, // to prevent hls file delete after end the stream
           dash: true,
           dashFlags: "[f=dash:window_size=3:extra_window_size=5]",
