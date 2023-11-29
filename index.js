@@ -63,7 +63,7 @@ app.get('/', (req, res) => {
     res.sendStatus(200);
   });
 
-  const loadStreamKeys = async () => {
+ export const loadStreamKeys = async () => {
     try {
       const channels = await Channel.find({ isBlocked: false });
 

@@ -1,5 +1,5 @@
 //creating the channel
-import { streamKeys } from "../index.js";
+import { loadStreamKeys, streamKeys } from "../index.js";
 import App from "../models/appModel.js";
 import Channel from "../models/channelModel.js";
 import User from "../models/userModel.js";
@@ -15,6 +15,9 @@ const removeStreamKey = async (itemToRemove) => {
   } else {
     console.log(`${itemToRemove} not found in the streamKeys.`);
   }
+
+  loadStreamKeys();
+
 };
 
 export const blockChannel = async (req, res) => {
@@ -51,6 +54,7 @@ export const blockChannel = async (req, res) => {
         streamKeys.push(data.streamKey);
       }
     });
+    loadStreamKeys();
     return res.status(201).json({ message: "Channel Updated", updatedChannel });
   } catch (err) {
     console.error(err);
@@ -105,8 +109,8 @@ export const createChannel = async (req, res) => {
 
     await newChannel.save();
     streamKeys.push(newChannel.streamKey);
-
-    return res.status(201).json(newChannel);
+    loadStreamKeys();
+ return res.status(201).json(newChannel);
   } catch (error) {
     console.error(error.message);
     return res.status(500).json({ message: "Internal Server Error" });
@@ -116,6 +120,8 @@ export const createChannel = async (req, res) => {
 export const getChannel = async (req, res) => {
   try {
     const { userId } = req.params;
+
+    loadStreamKeys()
 
     if (!userId) {
       return res.status(401).json({ message: "user Auth failed" });
@@ -158,7 +164,7 @@ export const deleteChannel = async (req, res) => {
     }
 
     const channel = await Channel.findByIdAndDelete({ _id: channelId });
-
+    loadStreamKeys();
     return res.status(204).json({ message: "Channel deleted" });
   } catch (error) {
     console.log(error.message);

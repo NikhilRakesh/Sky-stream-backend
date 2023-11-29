@@ -3,25 +3,23 @@ import Channel from "../models/channelModel.js";
 import Eadge from "../models/eadgeModel.js";
 import User from "../models/userModel.js";
 // import { restartServer } from "../server.js";
-const username = "codenuity"; 
-const password = "codenuity"; 
+const username = "codenuity";
+const password = "codenuity";
 const authString = `${username}:${password}`;
-const base64Credentials =  Buffer.from(authString).toString("base64");
+const base64Credentials = Buffer.from(authString).toString("base64");
 
 export const pushStream = async (req, res) => {
   try {
     const { userId, channelId } = req.params;
     const { edge } = req.body;
- 
+
     if (!userId || !channelId) {
-    
       return res.status(401).json({ message: "Not authorized" });
     }
 
     const user = await User.findById({ _id: userId });
 
     if (!user.superAdmin && !user.pushLive) {
- 
       return res.status(401).json({ message: "You are not an Admin" });
     }
 
@@ -88,7 +86,6 @@ export const deletePush = async (req, res) => {
     };
 
     const edge = await Eadge.findOne({ _id: channelId });
-  
 
     const response = await fetch(
       `http://127.0.0.1:8000/api/relay/${edge.pushID}`,
@@ -98,16 +95,14 @@ export const deletePush = async (req, res) => {
       }
     );
 
-    if (!response.ok) {
-      console.log(response);
-      return res.status(401).json({ message: "Not authorized" });
-    }
+    // if (!response.ok) {
+    //   return res.status(401).json({ message: "Not authorized" });
+    // }
 
-    if (response.status === 200) {
-      const edge = await Eadge.deleteOne({ _id: channelId }).catch((err) => {
-        console.log(err.message);
-      });
-    }
+    const deletedEdge = await Eadge.deleteOne({ _id: channelId }).catch((err) => {
+      console.log(err.message);
+    });
+
     res.status(204).json({ message: "No Content" });
   } catch (error) {
     res.status(500).json({ message: "Internal Server error" });
@@ -118,7 +113,6 @@ export const deletePush = async (req, res) => {
 export const getPush = async (req, res) => {
   try {
     const { channelId } = req.params;
-
 
     if (!channelId) {
       return res.status(401).json({ message: "Not authorized" });
