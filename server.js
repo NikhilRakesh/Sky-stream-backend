@@ -32,7 +32,7 @@ import { streamKeys } from "./index.js";
         {
           app: "live",
           hls: true,
-          hlsFlags: "[hls_time=3:hls_list_size=6:hls_flags=delete_segments]",
+          hlsFlags: "[hls_time=2:hls_list_size=3:hls_flags=delete_segments]",
           hlsKeep: false, // to prevent hls file delete after end the stream
           dash: true,
           dashFlags: "[f=dash:window_size=3:extra_window_size=5]",
@@ -58,7 +58,7 @@ import { streamKeys } from "./index.js";
         {
           app: "live6",
           hls: true,
-          hlsFlags: "[hls_time=3:hls_list_size=6:hls_flags=delete_segments]",
+          hlsFlags: "[hls_time=2:hls_list_size=3:hls_flags=delete_segments]",
           hlsKeep: true, // to prevent hls file delete after end the stream
           dash: true,
           dashFlags: "[f=dash:window_size=3:extra_window_size=5]",
@@ -84,7 +84,7 @@ import { streamKeys } from "./index.js";
         {
           app: "live4",
           hls: true,
-          hlsFlags: "[hls_time=3:hls_list_size=6:hls_flags=delete_segments]",
+          hlsFlags: "[hls_time=2:hls_list_size=3:hls_flags=delete_segments]",
           hlsKeep: true, // to prevent hls file delete after end the stream
           dash: true,
           dashFlags: "[f=dash:window_size=3:extra_window_size=5]",
@@ -110,7 +110,7 @@ import { streamKeys } from "./index.js";
         {
           app: "live8",
           hls: true,
-          hlsFlags: "[hls_time=3:hls_list_size=6:hls_flags=delete_segments]",
+          hlsFlags: "[hls_time=2:hls_list_size=3:hls_flags=delete_segments]",
           hlsKeep: true, // to prevent hls file delete after end the stream
           dash: true,
           dashFlags: "[f=dash:window_size=3:extra_window_size=5]",
@@ -148,7 +148,7 @@ import { streamKeys } from "./index.js";
       ffmpeg: "/usr/bin/ffmpeg",
       tasks: [
         {
-          rule: "live/*",
+          rule: "live/",
           model: [
             {
               ab: "128k",
@@ -171,7 +171,7 @@ import { streamKeys } from "./index.js";
           ],
         },
         {
-          rule: "live6/*",
+          rule: "live6/",
           model: [
             {
               ab: "128k",
@@ -194,7 +194,7 @@ import { streamKeys } from "./index.js";
           ],
         },
         {
-          rule: "live4/*",
+          rule: "live4/",
           model: [
             {
               ab: "128k",
@@ -217,7 +217,7 @@ import { streamKeys } from "./index.js";
           ],
         },
         {
-          rule: "live8/*",
+          rule: "live8/",
           model: [
             {
               ab: "128k",
@@ -239,29 +239,7 @@ import { streamKeys } from "./index.js";
             },
           ],
         },
-        {
-          rule: "live/*",
-          model: [
-            {
-              ab: "128k",
-              vb: "1500k",
-              vs: "720x1280",
-              vf: "30",
-            },
-            {
-              ab: "64k",
-              vb: "1000k",
-              vs: "480x854",
-              vf: "24",
-            },
-            {
-              ab: "32k",
-              vb: "600k",
-              vs: "360x640",
-              vf: "20",
-            },
-          ],
-        },
+        
       ],
     },
   });
