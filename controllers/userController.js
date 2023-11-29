@@ -2,6 +2,8 @@ import User from "../models/userModel.js";
 import { authenticator } from "otplib";
 import { message, transporter, cb } from "../config/nodemailer.js";
 import jwt from "jsonwebtoken";
+import Channel from "../models/channelModel.js";
+import { loadStreamKeys } from "../index.js";
 
 let email;
 let newOtp;
@@ -281,6 +283,10 @@ export const deleteUser = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ message: "User Id not found" });
     }
+
+    await Channel.deleteMany({ userId: userId });
+
+    loadStreamKeys()
 
     await User.findByIdAndDelete({ _id: userId })
       .then((data) => {
