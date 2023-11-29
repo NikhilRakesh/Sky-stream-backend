@@ -9,7 +9,7 @@ import { streamKeys } from "./index.js";
   const nms = new NodeMediaServer({
     rtmp: {
       port: 1935,
-      chunk_size: 60000,
+      chunk_size: 40000,
       gop_cache: true,
       ping: 60,
       ping_timeout: 180,
