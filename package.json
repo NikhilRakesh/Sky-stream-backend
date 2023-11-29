@@ -7,7 +7,7 @@
   "scripts": {
     "test": "mocha --require esm --exit test/index.test.js",
     "start": "nodemon index.js"
-  },
+  }, 
   "author": "Codenuity",
   "license": "ISC",
   "dependencies": {
