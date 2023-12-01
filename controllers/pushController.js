@@ -45,9 +45,7 @@ export const pushStream = async (req, res) => {
       body,
     });
 
-    if (!response.ok) {
-      console.log(response);
-    }
+
 
     if (response.status === 200) {
       const responseData = await response.text();

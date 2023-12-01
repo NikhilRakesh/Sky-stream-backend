@@ -43,7 +43,7 @@ export const addMessage = async (req, res) => {
 export const deleteMessage = async (req, res) => {
   try {
     const { id, sendId } = req.params;
-    console.log('id',id)
+    
 
     if (!id) {
       return res.status(401).json({ message: "Not authorized" });

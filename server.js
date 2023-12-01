@@ -37,41 +37,33 @@ import { streamKeys } from "./index.js";
           dash: true,
           dashFlags: "[f=dash:window_size=3:extra_window_size=5]",
           dashKeep: true,
-          mp4: true,
-          mp4Flags: "[movflags=frag_keyframe+empty_moov]",
         },
         {
           app: "live6",
           hls: true,
           hlsFlags: "[hls_time=3:hls_list_size=6:hls_flags=delete_segments]",
-          hlsKeep: true, // to prevent hls file delete after end the stream
+          hlsKeep: false, // to prevent hls file delete after end the stream
           dash: true,
           dashFlags: "[f=dash:window_size=3:extra_window_size=5]",
           dashKeep: true,
-          mp4: true,
-          mp4Flags: "[movflags=frag_keyframe+empty_moov]",
         },
         {
           app: "live4",
           hls: true,
           hlsFlags: "[hls_time=3:hls_list_size=6:hls_flags=delete_segments]",
-          hlsKeep: true, // to prevent hls file delete after end the stream
+          hlsKeep: false, // to prevent hls file delete after end the stream
           dash: true,
           dashFlags: "[f=dash:window_size=3:extra_window_size=5]",
           dashKeep: true,
-          mp4: true,
-          mp4Flags: "[movflags=frag_keyframe+empty_moov]",
         },
         {
           app: "live8",
           hls: true,
           hlsFlags: "[hls_time=3:hls_list_size=6:hls_flags=delete_segments]",
-          hlsKeep: true, // to prevent hls file delete after end the stream
+          hlsKeep: false, // to prevent hls file delete after end the stream
           dash: true,
           dashFlags: "[f=dash:window_size=3:extra_window_size=5]",
           dashKeep: true,
-          mp4: true,
-          mp4Flags: "[movflags=frag_keyframe+empty_moov]",
         },
       ],
     },
