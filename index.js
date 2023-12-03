@@ -34,14 +34,14 @@ app.use(
   cors({
     credentials: true,
     origin: [
-      "http://skystream.in",
+      "https://skystream.in",
       "http://localhost:5173",
-      "https://skystream.in/",
-      "http://192.168.29.169:5173/",
+      "https://skystream.in",
+      "http://103.248.61.196:5173",
       "http://localhost:8000",
       "https://cdn.bootcss.com/flv.js/1.5.0/flv.min.js",
     ],
-  }) 
+  })
 );
 
 
