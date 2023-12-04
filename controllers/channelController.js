@@ -16,8 +16,6 @@ const removeStreamKey = async (itemToRemove) => {
     console.log(`${itemToRemove} not found in the streamKeys.`);
   }
 
-  loadStreamKeys();
-
 };
 
 export const blockChannel = async (req, res) => {
