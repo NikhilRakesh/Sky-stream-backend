@@ -180,6 +180,10 @@ import { streamKeys } from "./index.js";
   nms.on("prePublish", async (id, StreamPath, args) => {
 
       const isValidStreamKey = streamKeys.includes(StreamPath);
+
+      console.log("isValidStreamKey", isValidStreamKey);
+      console.log("StreamPath", StreamPath);
+      
       if (!isValidStreamKey) {
         const session = nms.getSession(id);
         return session.reject();

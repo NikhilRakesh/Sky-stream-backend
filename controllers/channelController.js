@@ -1,10 +1,18 @@
 //creating the channel
+import path, { resolve } from "path";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+import fs from "fs";
 import { loadStreamKeys, streamKeys } from "../index.js";
 import App from "../models/appModel.js";
 import Channel from "../models/channelModel.js";
 import User from "../models/userModel.js";
 import nms from "../server.js";
+import fse from "fs-extra";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const parentDir = resolve(__dirname, "..");
 // function to remove stream key from streamKeys array when channel is deleted and blocked
 
 const removeStreamKey = async (itemToRemove) => {
@@ -15,7 +23,6 @@ const removeStreamKey = async (itemToRemove) => {
   } else {
     console.log(`${itemToRemove} not found in the streamKeys.`);
   }
-
 };
 
 export const blockChannel = async (req, res) => {
@@ -42,23 +49,33 @@ export const blockChannel = async (req, res) => {
       { _id: channelId },
       updateFields,
       { new: true }
-    ).then((data) => {
+    ).then(async (data) => {
       if (data.isBlocked) {
         removeStreamKey(data.streamKey);
+        const folderPath = path.join(parentDir, `./media${data.streamKey}`);
+        await fse.emptyDir(folderPath);
+
         if (channel.status) {
           nms.getSession(data.sessionId).reject();
+
+          fs.rmdir(folderPath, { recursive: true }, (err) => {
+            if (err) {
+              console.error("Error deleting folder:", err);
+            } else {
+              console.log("Folder deleted successfully");
+            }
+          });
         }
       } else {
         streamKeys.push(data.streamKey);
       }
     });
-    loadStreamKeys();
     return res.status(201).json({ message: "Channel Updated", updatedChannel });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Internal Server Error" });
   }
-}; 
+};
 
 export const createChannel = async (req, res) => {
   try {
@@ -108,7 +125,7 @@ export const createChannel = async (req, res) => {
     await newChannel.save();
     streamKeys.push(newChannel.streamKey);
     loadStreamKeys();
- return res.status(201).json(newChannel);
+    return res.status(201).json(newChannel);
   } catch (error) {
     console.error(error.message);
     return res.status(500).json({ message: "Internal Server Error" });
@@ -118,8 +135,6 @@ export const createChannel = async (req, res) => {
 export const getChannel = async (req, res) => {
   try {
     const { userId } = req.params;
-
-    loadStreamKeys()
 
     if (!userId) {
       return res.status(401).json({ message: "user Auth failed" });

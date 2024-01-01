@@ -7,7 +7,7 @@
   "scripts": {
     "test": "mocha --require esm --exit test/index.test.js",
     "start": "nodemon index.js"
-  }, 
+  },
   "author": "Codenuity",
   "license": "ISC",
   "dependencies": {
@@ -23,6 +23,8 @@
     "express": "^4.18.2",
     "express-session": "^1.17.3",
     "fluent-ffmpeg": "^2.1.2",
+    "fs": "^0.0.1-security",
+    "fs-extra": "^11.2.0",
     "helmet": "^7.0.0",
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",
@@ -35,6 +37,7 @@
     "nodemailer": "^6.9.5",
     "os": "^0.1.2",
     "otplib": "^12.0.1",
+    "path": "^0.12.7",
     "ws": "^8.14.2"
   },
   "devDependencies": {
