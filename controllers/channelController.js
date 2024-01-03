@@ -177,7 +177,7 @@ export const deleteChannel = async (req, res) => {
     }
 
     const channel = await Channel.findByIdAndDelete({ _id: channelId });
-    loadStreamKeys();
+    
     return res.status(204).json({ message: "Channel deleted" });
   } catch (error) {
     console.log(error.message);
