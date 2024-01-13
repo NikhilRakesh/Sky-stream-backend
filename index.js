@@ -3,9 +3,9 @@ import express from "express";
 import dotenv from "dotenv";
 import morgan from "morgan";
 import userRouter from "./routes/userRouter.js";
-import channelRouter from './routes/ChannelRouter.js';
-import helmet from 'helmet';
-import cors from 'cors';
+import channelRouter from "./routes/ChannelRouter.js";
+import helmet from "helmet";
+import cors from "cors";
 import "./server.js";
 dotenv.config();
 // import mongoose from "./config/dbConfig.js";
@@ -18,15 +18,14 @@ import Channel from "./models/channelModel.js";
 import connectDB from "./config/dbConfig.js";
 import nms from "./server.js";
 
-export const streamKeys = []; 
+export const streamKeys = [];
 
- 
-const PORT=process.env.PORT||5000;
+const PORT = process.env.PORT || 5000;
 
-const app=express();    
+const app = express();
 app.use(express.json());
-app.use(helmet())
-app.use(helmet.crossOriginResourcePolicy({policy:'cross-origin'}))
+app.use(helmet());
+app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("dev"));
 app.use(bodyParser.json({ limit: "30mb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
@@ -45,49 +44,43 @@ app.use(
   })
 );
 
-
-
 // Routes
-app.use("/api/users",userRouter);
-app.use('/api/channel',channelRouter);
+app.use("/api/users", userRouter);
+app.use("/api/channel", channelRouter);
 app.use("/api/stats", StatsRouter);
-app.use('/api/message',messageRoute);
-app.use('/api/push',postRouter)
-app.use('/api/domain',domainRouter)
-app.use('/api/auth',authRouter)
-
-
+app.use("/api/message", messageRoute);
+app.use("/api/push", postRouter);
+app.use("/api/domain", domainRouter);
+app.use("/api/auth", authRouter);
 
 // Test server configuration
-app.get('/', (req, res) => { 
+app.get("/", (req, res) => {
+  res.sendStatus(200);
+});
 
-    res.sendStatus(200);
-  });
+export const loadStreamKeys = async () => {
+  try {
+    const channels = await Channel.find({ isBlocked: false });
 
- export const loadStreamKeys = async () => {
-    try {
-      const channels = await Channel.find({ isBlocked: false });
+    channels.forEach((element) => {
+      streamKeys.push(element.streamKey);
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
 
-      channels.forEach((element) => {
-        streamKeys.push(element.streamKey);
-      });
-      
-    } catch (error) {
-      console.log(error);
-    }
-  };
+loadStreamKeys();
 
+setInterval(() => {
   loadStreamKeys();
+}, 1000 * 60);
 
-  connectDB().then(()=>{
-   app.listen(PORT, () =>
+connectDB().then(() => {
+  app.listen(PORT, () =>
     console.log(`Server ${process.pid} is running successfully on PORT ${PORT}`)
-  );  
+  );
   nms.run();
+});
 
-  })
-
- 
-            
-export default app ;
-   
+export default app;
