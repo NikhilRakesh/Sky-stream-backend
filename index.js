@@ -61,9 +61,10 @@ app.get("/", (req, res) => {
 export const loadStreamKeys = async () => {
   try {
     const channels = await Channel.find({ isBlocked: false });
-
     channels.forEach((element) => {
-      streamKeys.push(element.streamKey);
+      if (!streamKeys.includes(element.streamKey)) {
+        streamKeys.push(element.streamKey);
+      }
     });
   } catch (error) {
     console.log(error);
