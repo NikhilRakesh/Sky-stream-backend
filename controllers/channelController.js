@@ -15,7 +15,7 @@ const __dirname = dirname(__filename);
 const parentDir = resolve(__dirname, "..");
 // function to remove stream key from streamKeys array when channel is deleted and blocked
 
-const removeStreamKey = async (itemToRemove) => {
+export const removeStreamKey = async (itemToRemove) => {
   const index = streamKeys.indexOf(itemToRemove);
   if (index !== -1) {
     streamKeys.splice(index, 1);

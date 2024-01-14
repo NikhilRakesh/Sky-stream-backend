@@ -17,6 +17,7 @@ import authRouter from "./routes/authRouter.js";
 import Channel from "./models/channelModel.js";
 import connectDB from "./config/dbConfig.js";
 import nms from "./server.js";
+import { removeStreamKey } from "./controllers/channelController.js";
 
 export const streamKeys = [];
 
@@ -66,10 +67,17 @@ export const loadStreamKeys = async () => {
         streamKeys.push(element.streamKey);
       }
     });
+
+    streamKeys.forEach((element) => {
+      if (!channels.includes(element)) {
+        removeStreamKey(element);
+      }
+    });
   } catch (error) {
     console.log(error);
   }
 };
+
 
 loadStreamKeys();
 
