@@ -56,7 +56,7 @@ export const blockChannel = async (req, res) => {
         await fse.emptyDir(folderPath);
 
         if (channel.status) {
-          nms.getSession(data.sessionId).reject();
+         await nms.getSession(data.sessionId).reject();
 
           fs.rmdir(folderPath, { recursive: true }, (err) => {
             if (err) {
@@ -173,7 +173,7 @@ export const deleteChannel = async (req, res) => {
     const StreamPath = await Channel.findById({ _id: channelId });
 
     if (StreamPath.status) {
-      nms.getSession(StreamPath.sessionId).reject();
+     await nms.getSession(StreamPath.sessionId).reject();
     }
 
     const channel = await Channel.findByIdAndDelete({ _id: channelId });
