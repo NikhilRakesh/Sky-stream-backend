@@ -17,7 +17,6 @@ import authRouter from "./routes/authRouter.js";
 import Channel from "./models/channelModel.js";
 import connectDB from "./config/dbConfig.js";
 import nms from "./server.js";
-import { removeStreamKey } from "./controllers/channelController.js";
 
 export const streamKeys = [];
 
@@ -63,21 +62,14 @@ export const loadStreamKeys = async () => {
   try {
     const channels = await Channel.find({ isBlocked: false });
     channels.forEach((element) => {
-      if (!streamKeys.includes(element.streamKey)) {
+      if (!streamKeys.includes(element.streamKey)) { 
         streamKeys.push(element.streamKey);
-      }
-    });
-
-    streamKeys.forEach((element) => {
-      if (!channels.includes(element)) {
-        removeStreamKey(element);
       }
     });
   } catch (error) {
     console.log(error);
   }
 };
-
 
 loadStreamKeys();
 
