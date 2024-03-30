@@ -93,30 +93,33 @@ export const refreshToken = async (req, res, next) => {
 export const userLogout = async (req, res) => {
   try {
     const cookies = req.headers.cookie;
-    if (!cookies) {
-      return res.status(401).json({ message: "No cookies provided" });
-    }
+    console.log('cookies', cookies);
+    // if (!cookies) {
+    //   return res.status(401).json({ message: "No cookies provided" });
+    // }
 
-    const prevToken = cookies.split("=")[1];
+    // const prevToken = cookies.split("=")[1];
 
-    if (!prevToken) {
-      return res.status(401).json({ message: "Invalid token" });
-    }
+    // if (!prevToken) {
+    //   return res.status(401).json({ message: "Invalid token" });
+    // }
 
-    jwt.verify(prevToken, process.env.JWT_SECRET, (err, decoded) => {
-      if (err) {
-        console.log(err);
-        return res
-          .clearCookie(String("cookie"))
-          .status(403)
-          .json({ message: "Invalid token internal", error: err.message });
-      }
+    // jwt.verify(prevToken, process.env.JWT_SECRET, (err, decoded) => {
+    //   if (err) {
+    //     console.log(err);
+    //     return res
+    //       .clearCookie(String("cookie"))
+    //       .status(403)
+    //       .json({ message: "Invalid token internal", error: err.message });
+    //   }
 
-      res
-        .clearCookie(String('cookie'))
-        .status(200)
-        .json({ message: "User logged out successfully" });
-    });
+    //   res
+    //     .clearCookie(String('cookie'))
+    //     .status(200)
+    //     .json({ message: "User logged out successfully" });
+    // });
+    res.status(200)
+      .json({ message: "User logged out successfully" });
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
   }

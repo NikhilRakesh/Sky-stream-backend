@@ -14,6 +14,7 @@ const generateOTP = () => {
 };
 
 export const userCreation = async (req, res, next) => {
+
   try {
     const {
       name,
@@ -26,9 +27,10 @@ export const userCreation = async (req, res, next) => {
       deleteChannel,
       createChannel,
       deleteUser,
-      expiryDate, 
+      expiryDate,
     } = req.body;
-    const { id } = req.params;
+
+    const { id } = req.params;    
 
     if (!id) {
       return res.status(400).json({ message: "Authorized user not found" });
@@ -76,7 +78,7 @@ export const userCreation = async (req, res, next) => {
 
     newUser
       .save()
-      .then(() => {})
+      .then(() => { })
       .then()
       .catch((err) => console.log(err));
 
@@ -85,12 +87,14 @@ export const userCreation = async (req, res, next) => {
       .status(201)
       .json({ message: "User created successfully", data: newUser });
   } catch (error) {
+    console.log(error.message);
     res.status(500).json({ error: error.message });
   }
 };
 
 export const userLogin = async (req, res) => {
   try {
+    console.log('user-login');
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -100,6 +104,7 @@ export const userLogin = async (req, res) => {
     }
 
     const user = await User.findOne({ email: email });
+    console.log('user',user);
 
     if (!user) {
       return res.status(401).json({ message: "Invalid Email" });

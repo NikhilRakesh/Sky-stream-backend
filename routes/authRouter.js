@@ -6,7 +6,8 @@ import { checkSession } from "../middleware/session.js";
 const authRouter = express.Router();
 
 
-authRouter.post("/logout",userLogout)
+
+authRouter.post("/logout", userLogout)
 authRouter.post("/refresh-token", refreshToken, users);
 
 

@@ -7,7 +7,7 @@ import { loadStreamKeys, streamKeys } from "../index.js";
 import App from "../models/appModel.js";
 import Channel from "../models/channelModel.js";
 import User from "../models/userModel.js";
-import nms from "../server.js";
+// import nms from "../server.js";
 import fse from "fs-extra";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -56,7 +56,7 @@ export const blockChannel = async (req, res) => {
         await fse.emptyDir(folderPath);
 
         if (channel.status) {
-         await nms.getSession(data.sessionId).reject();
+          // await nms.getSession(data.sessionId).reject();
 
           fs.rmdir(folderPath, { recursive: true }, (err) => {
             if (err) {
@@ -81,6 +81,7 @@ export const createChannel = async (req, res) => {
   try {
     const { name, domain, streamKey } = req.body;
     const { userId } = req.params;
+    console.log('logs', userId);
 
     if (!userId) {
       return res.status(401).json({ message: "User authentication failed" });
@@ -145,7 +146,7 @@ export const getChannel = async (req, res) => {
     if (user.superAdmin) {
       const channel = await Channel.find({});
 
-      return res.status(201).json({ data: channel });
+      return res.status(201).json({ data: channel });      
     }
 
     const channels = await Channel.find({ userId: userId });
@@ -158,14 +159,14 @@ export const getChannel = async (req, res) => {
 
 export const deleteChannel = async (req, res) => {
   try {
-    const { channelId, userId } = req.params;
+    const { channelId } = req.params;
+    const userId = req.query.userId;
 
     if (!channelId) {
       return res.status(401).json({ message: "Channel Id not found" });
     }
 
     const user = await User.findById({ _id: userId });
-
     if (!user.superAdmin && !user.deleteChannel) {
       res.status(401).json({ message: "Not authorized to delete the channel" });
     }
@@ -173,11 +174,11 @@ export const deleteChannel = async (req, res) => {
     const StreamPath = await Channel.findById({ _id: channelId });
 
     if (StreamPath.status) {
-     await nms.getSession(StreamPath.sessionId).reject();
+      // await nms.getSession(StreamPath.sessionId).reject();
     }
 
     const channel = await Channel.findByIdAndDelete({ _id: channelId });
-    
+
     return res.status(204).json({ message: "Channel deleted" });
   } catch (error) {
     console.log(error.message);

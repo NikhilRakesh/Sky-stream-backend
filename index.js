@@ -1,22 +1,22 @@
 import bodyParser from "body-parser";
-import express from "express";
+import express from "express";           
 import dotenv from "dotenv";
 import morgan from "morgan";
 import userRouter from "./routes/userRouter.js";
 import channelRouter from "./routes/ChannelRouter.js";
 import helmet from "helmet";
 import cors from "cors";
-import "./server.js";
+// import "./server.js";    
 dotenv.config();
-// import mongoose from "./config/dbConfig.js";
+// import mongoose from "./config/dbConfig.js";    
 import StatsRouter from "./routes/statsRoute.js";
 import messageRoute from "./routes/messageRouter.js";
 import postRouter from "./routes/pushRouter.js";
 import domainRouter from "./routes/domainRouter.js";
 import authRouter from "./routes/authRouter.js";
 import Channel from "./models/channelModel.js";
-import connectDB from "./config/dbConfig.js";
-import nms from "./server.js";
+import connectDB from "./config/dbConfig.js";     
+// import nms from "./server.js";
 
 export const streamKeys = [];
 
@@ -34,12 +34,16 @@ app.use(
     credentials: true,
     origin: [
       "https://skystream.in",
+      "https://skystreamservers.com",
       "http://localhost:5173",
-      "http://skystream.in",
+      "http://localhost",
+      "http://skystream.in",    
       "http://103.248.61.196:5173",
       "http://localhost:8000",
       "https://cdn.bootcss.com/flv.js/1.5.0/flv.min.js",
       "http://localhost:5174",
+      "http://154.26.136.90:80",
+      "http://skystreamservers.com"
     ],
   })
 );
@@ -79,9 +83,9 @@ setInterval(() => {
 
 connectDB().then(() => {
   app.listen(PORT, () =>
-    console.log(`Server ${process.pid} is running successfully on PORT ${PORT}`)
+    console.log(`Server ${process.pid} is running successfully on PORT ${PORT}`)  
   );
-  nms.run();
+  // nms.run();
 });
 
-export default app;
+export default app;   

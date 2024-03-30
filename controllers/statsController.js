@@ -4,15 +4,15 @@ import Channel from "../models/channelModel.js";
 const username = "codenuity";
 const password = "codenuity";
 const authString = `${username}:${password}`;
-const base64Credentials = Buffer.from(authString).toString("base64"); 
- let lastInBytes= 0 ;
-let lastOtBytes= 0 ;
-    let inband = 0;
-    let outband = 0;
+const base64Credentials = Buffer.from(authString).toString("base64");
+let lastInBytes = 0;
+let lastOtBytes = 0;
+let inband = 0;
+let outband = 0;
 
 export const getSystemStats = async (req, res) => {
   try {
-   
+
     const headers = {
       Authorization: `Basic ${base64Credentials}`,
     };
@@ -28,23 +28,23 @@ export const getSystemStats = async (req, res) => {
       (memoryUsage.rss + memoryUsage.heapUsed) / (1024 * 1024)
     );
 
-    inband =  parseFloat(
-     ((data.net.inbytes - lastInBytes) / (1024 * 1024)).toFixed(2)
-   );
+    inband = parseFloat(
+      ((data.net.inbytes - lastInBytes) / (1024 * 1024)).toFixed(2)
+    );
     outband = parseFloat(
-     ((data.net.outbytes - lastOtBytes) / (1024 * 1024)).toFixed(2)
-   );
+      ((data.net.outbytes - lastOtBytes) / (1024 * 1024)).toFixed(2)
+    );
 
-      
-     const serverStats = { 
-       inBandwidth: inband || 0,
-       outBandwidth: outband || 0,
-       cpuLoad: data.cpu.load,
-       totalMemoryUsage,
-      };
 
-      lastInBytes = data.net.inbytes
-      lastOtBytes = data.net.outbytes 
+    const serverStats = {
+      inBandwidth: inband || 0,
+      outBandwidth: outband || 0,
+      cpuLoad: data.cpu.load,
+      totalMemoryUsage,
+    };
+
+    lastInBytes = data.net.inbytes
+    lastOtBytes = data.net.outbytes
     res.status(200).json({ data: serverStats });
   } catch (error) {
     console.log(error.message);
@@ -134,11 +134,11 @@ export const getSingleLiveNow = async (req, res) => {
     const publisherData = live[key].publisher;
     singleInBytes = publisherData.bytes;
     const subscribers = live[key].subscribers;
-     singleOutBytes = subscribers.reduce((total, sub) => total + sub.bytes, 0);
+    singleOutBytes = subscribers.reduce((total, sub) => total + sub.bytes, 0);
 
-    const inMbps =  parseFloat(((singleInBytes - lastSingleInBytes) / (1024 * 1024)).toFixed(2));
+    const inMbps = parseFloat(((singleInBytes - lastSingleInBytes) / (1024 * 1024)).toFixed(2));
 
-    const outMbps =  parseFloat(((singleOutBytes - lastSingleOutBytes) / (1024 * 1024)).toFixed(2));
+    const outMbps = parseFloat(((singleOutBytes - lastSingleOutBytes) / (1024 * 1024)).toFixed(2));
 
 
 
