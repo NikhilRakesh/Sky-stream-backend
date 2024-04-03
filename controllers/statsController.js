@@ -9,42 +9,64 @@ let lastInBytes = 0;
 let lastOtBytes = 0;
 let inband = 0;
 let outband = 0;
+import os from 'os';
+import path from 'path';
+import fs from 'fs';
+// import diskstats from 'diskstats';
+import diskinfo from 'node-disk-info';
+import si from 'systeminformation';
+let prevDiskInfo = null; 
 
 export const getSystemStats = async (req, res) => {
   try {
+    const totalMemory = os.totalmem();
+    const freeMemory = os.freemem();
+    const cpuCount = os.cpus().length;
+    const loadAvg = os.loadavg();
 
-    const headers = {
-      Authorization: `Basic ${base64Credentials}`,
-    };
+    const memoryUsage = Math.round(((totalMemory - freeMemory) / totalMemory) * 100);
+    const cpuUsage = Math.round((loadAvg[0] / cpuCount) * 100);
 
-    const response = await fetch("http://localhost:8000/api/server", {
-      method: "GET",
-      headers,
-    });
+    const diskInfo = await si.fsSize();
 
-    const data = await response.json();
-    const memoryUsage = process.memoryUsage();
-    const totalMemoryUsage = Math.floor(
-      (memoryUsage.rss + memoryUsage.heapUsed) / (1024 * 1024)
-    );
+    let diskRead = 0;
+    let diskWrite = 0;
 
-    inband = parseFloat(
-      ((data.net.inbytes - lastInBytes) / (1024 * 1024)).toFixed(2)
-    );
-    outband = parseFloat(
-      ((data.net.outbytes - lastOtBytes) / (1024 * 1024)).toFixed(2)
-    );
+    // Calculate disk read and write rates if previous disk info is available
+    if (prevDiskInfo) {
+      // Loop through each disk
+      for (const currentDisk of diskInfo) {
+        // Find the corresponding disk in the previous disk info
+        const prevDisk = prevDiskInfo.find(prev => prev.fs === currentDisk.fs);
+        if (prevDisk) {
+          // Calculate read and write rates for the current disk
+          const readRate = (currentDisk.used - prevDisk.used) / 5; // Assuming a 5-second interval
+          const writeRate = (currentDisk.size - prevDisk.size) / 5; // Assuming a 5-second interval
 
+          diskRead += readRate;
+          diskWrite += writeRate;
+        }
+      }
+    }
+
+    // Store current disk info for the next iteration
+    prevDiskInfo = diskInfo;
+
+    const inBandwidth = 100;
+    const outBandwidth = 50;
 
     const serverStats = {
-      inBandwidth: inband || 0,
-      outBandwidth: outband || 0,
-      cpuLoad: data.cpu.load,
-      totalMemoryUsage,
+      totalMemory,
+      freeMemory,
+      memoryUsage,
+      cpuCount,
+      cpuUsage,
+      inBandwidth,
+      outBandwidth,
+      diskRead,
+      diskWrite,
     };
 
-    lastInBytes = data.net.inbytes
-    lastOtBytes = data.net.outbytes
     res.status(200).json({ data: serverStats });
   } catch (error) {
     console.log(error.message);
@@ -58,7 +80,7 @@ export const getStreamStats = async (req, res) => {
     const headers = {
       Authorization: `Basic ${base64Credentials}`,
     };
-    const response = await fetch("http://localhost:8000/api/streams", {
+    const response = await fetch("http://localhost:3000/api/streams", {
       method: "GET",
       headers,
     });
@@ -84,9 +106,9 @@ export const getLiveNow = async (req, res) => {
 
     if (user.superAdmin) {
       liveNowChannel = await Channel.find({ status: true });
-    } else {
+    } else { 
 
-      const response = await fetch("http://localhost:8000/api/streams", {
+      const response = await fetch("http://localhost:3000/api/streams", {
         method: "GET",
         headers,
       });
@@ -115,7 +137,7 @@ export const getSingleLiveNow = async (req, res) => {
       Authorization: `Basic ${base64Credentials}`,
     };
 
-    const response = await fetch("http://localhost:8000/api/streams", {
+    const response = await fetch("http://localhost:3000/api/streams", {
       method: "GET",
       headers,
     });

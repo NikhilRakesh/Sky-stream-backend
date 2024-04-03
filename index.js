@@ -35,7 +35,7 @@ app.use(
     origin: [
       "https://skystream.in",
       "https://skystreamservers.com",
-      "http://localhost:5173",
+      "http://localhost:5173",  
       "http://localhost",
       "http://skystream.in",    
       "http://103.248.61.196:5173",
@@ -51,9 +51,9 @@ app.use(
 // Routes
 app.use("/api/users", userRouter);
 app.use("/api/channel", channelRouter);
-app.use("/api/stats", StatsRouter);
+app.use("/api/stats", StatsRouter);           
 app.use("/api/message", messageRoute);
-app.use("/api/push", postRouter);
+app.use("/api/push", postRouter);  
 app.use("/api/domain", domainRouter);
 app.use("/api/auth", authRouter);
 
