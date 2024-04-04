@@ -41,7 +41,7 @@ export const deleteDomain = async (req, res) => {
 
     res.status(200).json({ message: "Domain deleted successfully", domain });
 
-    restartServer()
+    // restartServer()
 
   } catch (error) {
     res.status(500).json({ message: "Domain deletion failed", error });

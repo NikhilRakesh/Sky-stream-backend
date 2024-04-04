@@ -89,7 +89,7 @@ export const createChannel = async (req, res) => {
 
     const isAdmin = await User.findById(userId);
 
-    const channels = await Channel.find({ userId: userId });
+    const channels = await Channel.find({ userId: userId });    
 
     const isExisting = await Channel.findOne({
       streamKey: `/${"live"}/${streamKey}`,
