@@ -43,7 +43,8 @@ app.use(
       "https://cdn.bootcss.com/flv.js/1.5.0/flv.min.js",
       "http://localhost:5174",
       "http://154.26.136.90:80",
-      "http://skystreamservers.com"        
+      "http://skystreamservers.com",     
+      "http://live.skystreamservers.com",     
     ],
   })
 );
