@@ -40,7 +40,7 @@ app.use(
       "http://skystream.in",    
       "http://103.248.61.196:5173",
       "http://localhost:8000",
-      "https://cdn.bootcss.com/flv.js/1.5.0/flv.min.js",
+      "https://cdn.bootcss.com/flv.js/1.5.0/flv.min.js",  
       "http://localhost:5174",
       "http://154.26.136.90:80",
       "http://skystreamservers.com",     

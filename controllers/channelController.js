@@ -41,7 +41,7 @@ export const blockChannel = async (req, res) => {
     const channel = await Channel.findById({ _id: channelId });
 
     // Update the channel based on the blocked value
-    const updateFields = blocked
+    const updateFields = !blocked
       ? { isBlocked: true, status: false }
       : { isBlocked: false };
 
@@ -81,7 +81,6 @@ export const createChannel = async (req, res) => {
   try {
     const { name, domain, streamKey } = req.body;
     const { userId } = req.params;
-    console.log('logs', userId);
 
     if (!userId) {
       return res.status(401).json({ message: "User authentication failed" });
@@ -89,7 +88,7 @@ export const createChannel = async (req, res) => {
 
     const isAdmin = await User.findById(userId);
 
-    const channels = await Channel.find({ userId: userId });    
+    const channels = await Channel.find({ userId: userId });
 
     const isExisting = await Channel.findOne({
       streamKey: `/${"live"}/${streamKey}`,
@@ -134,6 +133,7 @@ export const createChannel = async (req, res) => {
 };
 
 export const getChannel = async (req, res) => {
+
   try {
     const { userId } = req.params;
 
@@ -146,7 +146,7 @@ export const getChannel = async (req, res) => {
     if (user.superAdmin) {
       const channel = await Channel.find({});
 
-      return res.status(201).json({ data: channel });      
+      return res.status(201).json({ data: channel });
     }
 
     const channels = await Channel.find({ userId: userId });
@@ -155,6 +155,7 @@ export const getChannel = async (req, res) => {
   } catch (error) {
     return res.status(500).json({ message: "Internal Server Error" });
   }
+
 };
 
 export const deleteChannel = async (req, res) => {
