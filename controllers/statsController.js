@@ -95,7 +95,6 @@ export const getStreamStats = async (req, res) => {
 export const getLiveNow = async (req, res) => {
   try {
     const { userId } = req.params;
-
     const headers = {
       Authorization: `Basic ${base64Credentials}`,
     };
@@ -112,7 +111,8 @@ export const getLiveNow = async (req, res) => {
         method: "GET",
         headers,
       });
-      const data = await response.json();
+      
+      // const data = await response.json();
       liveNowChannel = await Channel.find({ userId: userId, status: true });
 
     }
