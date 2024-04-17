@@ -59,7 +59,7 @@ app.use("/api/domain", domainRouter);
 app.use("/api/auth", authRouter);
 
 // Test server configuration
-app.get("/", (req, res) => {
+app.get("/", (req, res) => {     
   res.sendStatus(200);
 });
 

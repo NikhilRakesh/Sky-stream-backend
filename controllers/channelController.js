@@ -186,3 +186,22 @@ export const deleteChannel = async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+
+export const validateStreamKey = async (req, res) => {
+  try {
+    const { streamKey } = req.body;
+
+    const isValidStreamKey = await Channel.exists({ streamKey, isBlocked: false });
+
+    if (isValidStreamKey) {
+
+      res.status(200).json({ isValid: true, message: 'Stream key is valid.' });
+    } else {
+
+      res.status(401).json({ isValid: false, message: 'Stream key is not valid.' });
+    }
+  } catch (error) {
+    console.log(`validateStreamKey error:${error}`);
+  }
+}
