@@ -16,7 +16,7 @@ import domainRouter from "./routes/domainRouter.js";
 import authRouter from "./routes/authRouter.js";
 import Channel from "./models/channelModel.js";
 import connectDB from "./config/dbConfig.js";     
-// import nms from "./server.js";
+import nms from "./server.js";
 
 export const streamKeys = [];
 
@@ -75,7 +75,7 @@ export const loadStreamKeys = async () => {
     console.log(error);
   }
 };
-
+ 
 loadStreamKeys();
 
 setInterval(() => {
@@ -86,7 +86,7 @@ connectDB().then(() => {
   app.listen(PORT, () =>
     console.log(`Server ${process.pid} is running successfully on PORT ${PORT}`)  
   );
-  // nms.run();
+  nms.run();
 });
 
 export default app;   

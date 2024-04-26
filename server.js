@@ -1,14 +1,14 @@
-// import NodeMediaServer from "node-media-server";
-// import Channel from "./models/channelModel.js";
-// import App from "./models/appModel.js";
-// import User from "./models/userModel.js";
-// import Eadge from "./models/eadgeModel.js";
-// import { streamKeys } from "./index.js";
-// import path, { resolve } from "path";
-// import { fileURLToPath } from "url";
-// import { dirname } from "path";
-// import fs from "fs";
-// import fse from "fs-extra";
+import NodeMediaServer from "node-media-server";
+import Channel from "./models/channelModel.js";
+import App from "./models/appModel.js";
+import User from "./models/userModel.js";
+import Eadge from "./models/eadgeModel.js";
+import { streamKeys } from "./index.js";
+import path, { resolve } from "path";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+import fs from "fs";
+import fse from "fs-extra";
 
 // const nms = new NodeMediaServer({
 //   rtmp: {
@@ -238,4 +238,36 @@
 //   );
 // });
 
-// export default nms;
+const config = {
+    rtmp: {
+        port: 1935,
+        chunk_size: 60000,
+        gop_cache: true,
+        ping: 60,
+        ping_timeout: 30,
+        relay: [
+            {
+                app: 'live',
+                mode: 'push',
+                edge: 'rtmp://localhost:1935/live'
+            }
+        ]
+    }
+};
+
+const nms = new NodeMediaServer(config);
+
+nms.on('prePublish', (id, StreamPath, args) => {
+    const isValidStreamKey = streamKeys.includes(StreamPath);
+
+    if (!isValidStreamKey) {
+        console.log(`Unauthorized access attempt: Stream key "" is invalid.`);
+        const session = nms.getSession(id);
+        return session.reject();
+    }
+
+    console.log(`Stream key "${StreamPath}" is valid. Allowing connection.`);
+    return true;
+});
+
+export default nms;  
