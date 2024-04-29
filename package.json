@@ -40,6 +40,7 @@
     "os": "^0.1.2",
     "otplib": "^12.0.1",
     "path": "^0.12.7",
+    "rtmp-stream": "^1.0.1",
     "systeminformation": "^5.22.6",
     "ws": "^8.14.2"
   },

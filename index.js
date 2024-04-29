@@ -17,6 +17,7 @@ import authRouter from "./routes/authRouter.js";
 import Channel from "./models/channelModel.js";
 import connectDB from "./config/dbConfig.js";     
 import nms from "./server.js";
+import { setInterval } from 'timers';
 
 export const streamKeys = [];
 
@@ -88,5 +89,17 @@ connectDB().then(() => {
   );
   nms.run();
 });
+
+setInterval(() => {
+  const memoryUsage = process.memoryUsage();
+  const memoryUsageGB = {
+      rss: (memoryUsage.rss / (1024 * 1024 * 1024)).toFixed(2),
+      heapTotal: (memoryUsage.heapTotal / (1024 * 1024 * 1024)).toFixed(2),
+      heapUsed: (memoryUsage.heapUsed / (1024 * 1024 * 1024)).toFixed(2),
+      external: (memoryUsage.external / (1024 * 1024 * 1024)).toFixed(2),
+      arrayBuffers: (memoryUsage.arrayBuffers / (1024 * 1024 * 1024)).toFixed(2)
+  };
+  console.log('Memory usage (GB):', memoryUsageGB);
+}, 5000);
 
 export default app;   

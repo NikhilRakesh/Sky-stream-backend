@@ -241,52 +241,11 @@ import { exec } from 'child_process';
 //   );
 // });
 
-const config = {
-    rtmp: {
-        port: 1935,
-        chunk_size: 60000,
-        gop_cache: true,
-        ping: 60,
-        ping_timeout: 30,
-        // relay:{
-        //     tasks: [{
-        //         mode: 'push',
-        //       edge: 'rtmp://127.0.0.1:1936/live'
-        //     }]
-        //   }
-    }
-};
-
-const nms = new NodeMediaServer(config);
-
-// nms.on('prePublish', (id, StreamPath, args) => {
-//     const isValidStreamKey = streamKeys.includes(StreamPath);
-
-//     if (!isValidStreamKey) {
-//         console.log(`Unauthorized access attempt: Stream key "${StreamPath}" is invalid.`);
-//         const session = nms.getSession(id);
-//         return session.reject();
-//     }
-
-//     console.log(`Stream key "${StreamPath}" is valid. Redirecting connection to OSSR/SRS server...`);
-//     const rtmpServerAddress = 'rtmp://localhost:1936';
-//     const redirectUrl = rtmpServerAddress + StreamPath;
-//     console.log(`Redirecting to ${redirectUrl}`);
-//     nms.publish(redirectUrl, StreamPath, id);
-// });
-
-nms.on('prePublish', (id, StreamPath, args) => {
-    const isValidStreamKey = streamKeys.includes(StreamPath);
-    if (!isValidStreamKey) { 
-        console.log(`Unauthorized access attempt: Stream key "${StreamPath}" is invalid.`);
-        const session = nms.getSession(id);
-        return session.reject();
-    }
+const createFFmpegProcess = (StreamPath) => {
 
     const ffmpegCommand = `ffmpeg -i rtmp://localhost:1935${StreamPath} -c copy -f flv rtmp://localhost:1936${StreamPath}`;
-        
-    // Execute the FFmpeg command
-    exec( nb , (error, stdout, stderr) => {
+
+    const ffmpegProcess = exec(ffmpegCommand, (error, stdout, stderr) => {
         console.log("entered in sid ethe the ");
         if (error) {
             console.error(`Error executing FFmpeg command: ${error}`);
@@ -294,6 +253,67 @@ nms.on('prePublish', (id, StreamPath, args) => {
         }
         console.log(`Redirected stream ${StreamPath} to SRS container at port 1936`);
     });
+
+    // Attach cleanup function to remove event listeners and kill process
+    const cleanup = () => {
+        console.log('Cleaning up FFmpeg process');
+        ffmpegProcess.kill('SIGTERM');
+        ffmpegProcess.removeAllListeners();
+    };
+
+    // Listen for exit event to trigger cleanup
+    ffmpegProcess.on('exit', (code, signal) => {
+        console.log('FFmpeg process exited with code', code);
+        cleanup();
+    });
+
+    return cleanup;
+};
+
+const config = {
+    rtmp: {
+        port: 1935,
+        chunk_size: 60000,
+        gop_cache: true,
+        ping: 60,
+        ping_timeout: 30,
+    }
+};
+
+const nms = new NodeMediaServer(config);
+
+const cleanupFunctions = new Map();
+
+nms.on('prePublish', (id, StreamPath, args) => {
+
+    try {
+        const isValidStreamKey = streamKeys.includes(StreamPath);
+        if (!isValidStreamKey) {
+            console.log(`Unauthorized access attempt: Stream key "${StreamPath}" is invalid.`);
+            const session = nms.getSession(id);
+            return session.reject();
+        }
+
+        // Create FFmpeg process and get cleanup function
+        const cleanupFFmpegProcess = createFFmpegProcess(StreamPath);
+
+        cleanupFunctions.set(StreamPath, cleanupFFmpegProcess);
+
+    } catch (err) {  
+        console.error('Error occurred during stream key validation:', err);
+        const session = nms.getSession(id);
+        session.reject();
+    }
+
+    nms.on('donePublish', (id, StreamPath) => {
+        const cleanupFunction = cleanupFunctions.get(StreamPath);
+        if (cleanupFunction) {
+            console.log(`Cleaning up FFmpeg process for stream ${StreamPath}`);
+            cleanupFunction();
+            cleanupFunctions.delete(StreamPath);
+        }
+    });
+
 });
 
 export default nms;  
