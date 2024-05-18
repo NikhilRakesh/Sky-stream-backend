@@ -7,7 +7,7 @@ import { checkSession } from "../middleware/session.js";
 const channelRouter = express.Router();
 
 channelRouter.post('/:userId?', createChannel);
-channelRouter.post('/:streamkey?', validateStreamKey);
+channelRouter.post('/stream/verify', validateStreamKey);
 channelRouter.get("/:userId?", getChannel);
 channelRouter.get('/delete/:channelId?/:userId?', deleteChannel);
 channelRouter.post('/block-channel/:channelId?', blockChannel);

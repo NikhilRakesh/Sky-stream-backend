@@ -6,6 +6,11 @@ WORKDIR /home/node/app
 
 COPY package*.json ./
 
+USER root
+
+RUN apk update
+RUN apk add ffmpeg
+
 USER node
 
 RUN npm ci
@@ -13,5 +18,6 @@ RUN npm ci
 COPY --chown=node:node . .
 
 EXPOSE 3000
+EXPOSE 1935
 
 CMD [ "npm", "start" ]

@@ -241,79 +241,79 @@ import { exec } from 'child_process';
 //   );
 // });
 
-const createFFmpegProcess = (StreamPath) => {
+// const createFFmpegProcess = (StreamPath) => {
 
-    const ffmpegCommand = `ffmpeg -i rtmp://localhost:1935${StreamPath} -c copy -f flv rtmp://localhost:1936${StreamPath}`;
+//     const ffmpegCommand = `ffmpeg -i rtmp://live.skystream.in:1935${StreamPath} -c copy -f flv rtmp://srs:1935${StreamPath}`;
 
-    const ffmpegProcess = exec(ffmpegCommand, (error, stdout, stderr) => {
-        console.log("entered in sid ethe the ");
-        if (error) {
-            console.error(`Error executing FFmpeg command: ${error}`);
-            return;
-        }
-        console.log(`Redirected stream ${StreamPath} to SRS container at port 1936`);
-    });
+//     const ffmpegProcess = exec(ffmpegCommand, (error, stdout, stderr) => {
+//         console.log("entered in sid ethe the ");
+//         if (error) {
+//             console.error(`Error executing FFmpeg command: ${error}`);
+//             return;
+//         }
+//         console.log(`Redirected stream ${StreamPath} to SRS container at port 1936`);
+//     });
 
-    // Attach cleanup function to remove event listeners and kill process
-    const cleanup = () => {
-        console.log('Cleaning up FFmpeg process');
-        ffmpegProcess.kill('SIGTERM');
-        ffmpegProcess.removeAllListeners();
-    };
+//     // Attach cleanup function to remove event listeners and kill process
+//     const cleanup = () => {
+//         console.log('Cleaning up FFmpeg process');
+//         ffmpegProcess.kill('SIGTERM');
+//         ffmpegProcess.removeAllListeners();
+//     };
 
-    // Listen for exit event to trigger cleanup
-    ffmpegProcess.on('exit', (code, signal) => {
-        console.log('FFmpeg process exited with code', code);
-        cleanup();
-    });
+//     // Listen for exit event to trigger cleanup
+//     ffmpegProcess.on('exit', (code, signal) => {
+//         console.log('FFmpeg process exited with code', code);
+//         cleanup();
+//     });
 
-    return cleanup;
-};
+//     return cleanup;
+// };
 
-const config = {
-    rtmp: {
-        port: 1935,
-        chunk_size: 60000,
-        gop_cache: true,
-        ping: 60,
-        ping_timeout: 30,
-    }
-};
+// const config = {
+//     rtmp: {
+//         port: 1935,
+//         chunk_size: 60000,
+//         gop_cache: true,
+//         ping: 60,
+//         ping_timeout: 30,
+//     }
+// };
 
-const nms = new NodeMediaServer(config);
+// const nms = new NodeMediaServer(config);
 
-const cleanupFunctions = new Map();
+// const cleanupFunctions = new Map();
 
-nms.on('prePublish', (id, StreamPath, args) => {
+// nms.on('prePublish', (id, StreamPath, args) => {
 
-    try {
-        const isValidStreamKey = streamKeys.includes(StreamPath);
-        if (!isValidStreamKey) {
-            console.log(`Unauthorized access attempt: Stream key "${StreamPath}" is invalid.`);
-            const session = nms.getSession(id);
-            return session.reject();
-        }
+//     try {
+//         const isValidStreamKey = streamKeys.includes(StreamPath);
+//         if (!isValidStreamKey) {
+//             console.log(`Unauthorized access attempt: Stream key "${StreamPath}" is invalid.`);
+//             const session = nms.getSession(id);
+//             return session.reject();
+//         }
 
-        // Create FFmpeg process and get cleanup function
-        const cleanupFFmpegProcess = createFFmpegProcess(StreamPath);
+//         // Create FFmpeg process and get cleanup function
+//         const cleanupFFmpegProcess = createFFmpegProcess(StreamPath);
 
-        cleanupFunctions.set(StreamPath, cleanupFFmpegProcess);
+//         cleanupFunctions.set(StreamPath, cleanupFFmpegProcess);
 
-    } catch (err) {  
-        console.error('Error occurred during stream key validation:', err);
-        const session = nms.getSession(id);
-        session.reject();
-    }
+//     } catch (err) {  
+//         console.error('Error occurred during stream key validation:', err);
+//         const session = nms.getSession(id);
+//         session.reject();
+//     }
 
-    nms.on('donePublish', (id, StreamPath) => {
-        const cleanupFunction = cleanupFunctions.get(StreamPath);
-        if (cleanupFunction) {
-            console.log(`Cleaning up FFmpeg process for stream ${StreamPath}`);
-            cleanupFunction();
-            cleanupFunctions.delete(StreamPath);
-        }
-    });
+//     nms.on('donePublish', (id, StreamPath) => {
+//         const cleanupFunction = cleanupFunctions.get(StreamPath);
+//         if (cleanupFunction) {
+//             console.log(`Cleaning up FFmpeg process for stream ${StreamPath}`);
+//             cleanupFunction();
+//             cleanupFunctions.delete(StreamPath);
+//         }
+//     });
 
-});
+// });
 
-export default nms;  
+// export default nms;  
